@@ -10,10 +10,10 @@
 
 !srcs/
 !include/
-!server/
+!www/
 
 !srcs/**
 !include/**
-!server/**
+!www/**
 
 !README.md
