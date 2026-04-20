@@ -6,7 +6,7 @@
 #    By: fdeleard <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/06 15:15:38 by fdeleard          #+#    #+#              #
-#    Updated: 2026/04/20 09:07:13 by fdeleard         ###   ########.fr        #
+#    Updated: 2026/04/20 12:41:21 by fdeleard         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,8 +46,9 @@ CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
 
 #	SOURCES AND HEADERS
-SRCS					:=				main.cpp
-INCS					:=
+SRCS					:=				$(DIR_SRCS)/main.cpp \
+										$(DIR_SRCS)/server/Server.cpp
+INCS					:=				$(DIR_INCS)/Server.hpp
 
 
 
@@ -56,6 +57,7 @@ OBJS					:=				$(addprefix $(DIR_OBJS)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS					:=				$(addprefix $(DIR_DEPS)/, $(notdir $(SRCS:.cpp=.d)))
 
 
+vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server
 
 #	ALL RULE
 .PHONY:			all
@@ -67,16 +69,8 @@ all:
 											fi; 
 
 
-#	COMPILE MAIN RULE
+#	COMPILE CPP FILES RULE
 $(DIR_OBJS)/%.o:						%.cpp Makefile
-											@mkdir -p $(DIR_OBJS) $(DIR_DEPS)
-											@$(CXX) $(CXXFLAGS) -c $< -o $@
-											@mv $(DIR_OBJS)/$(notdir $(basename $@)).d $(DIR_DEPS)/ 2>/dev/null || true
-											@printf "$(BLUE)$(NAME) > Compiling : $(END)$<\n"
-
-
-#	COMPILE SRCS FILES RULE
-$(DIR_OBJS)/%.o:						$(DIR_SRCS)/%.cpp Makefile
 											@mkdir -p $(DIR_OBJS) $(DIR_DEPS)
 											@$(CXX) $(CXXFLAGS) -c $< -o $@
 											@mv $(DIR_OBJS)/$(notdir $(basename $@)).d $(DIR_DEPS)/ 2>/dev/null || true
