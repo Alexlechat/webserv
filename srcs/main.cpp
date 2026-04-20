@@ -1,94 +1,57 @@
-#include <string>
-#include <fstream>
-#include <sstream>
+#include <cstring>
 #include <iostream>
 #include <unistd.h>
-
-#include "Server.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+
 int	main(void)
 {
-	Server	server;
-
-	while (42)
+	//CREATE SOCKET
+	int	server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (server_fd < 0)
 	{
-		struct sockaddr_in	client_addr;
-
-		socklen_t	client_addr_len = sizeof(client_addr);
-		int	client_fd = accept(server.getServerFd(), (struct sockaddr *)&client_addr, &client_addr_len);
-		if (client_fd < 0)
-		{
-			std::cerr << "Client Accept failed\n";
-			continue ;
-		}
-
-		char	buffer[1024] = {0};
-
-		read(client_fd, buffer, sizeof(buffer) - 1);
-
-		std::stringstream	response;
-		std::string	path = "/";
-		std::string	request(buffer);
-
-		std::cout << "REQUEST: " << request << "\n";
-
-		if (request.find("GET / ") != std::string::npos)
-			path = "/";
-		else if (request.find("GET /") != std::string::npos)
-		{
-			size_t	start = request.find("GET /") + 5;
-			size_t	end = request.find(" ", start);
-			path = request.substr(start, end - start);
-		}
-
-		if (path == "/")
-		{
-			std::ifstream	file("www/index.html");
-			std::string		buffer;
-			std::stringstream	test;
-
-			while (std::getline(file, buffer))
-				test << buffer;
-
-			response << "HTTP/1.1 200 OK\n";
-			response << "Content-Type: text/html; charset=UTF-8\n";
-			response << "Content-Lenght: " << test.str().length();
-			response << "\n\n";
-
-			response << test.str();
-			response << "\r\n\r\n";
-
-			std::cout << "RESPONSE: \n" << response.str() << "\n";
-			file.close();
-		}
-		else if (path == "test")
-		{
-			std::ifstream	file("www/test");
-			std::string		buffer;
-			std::stringstream	test;
-
-			while (std::getline(file, buffer))
-				test << buffer;
-
-			response << "HTTP/1.1 200 OK\n";
-			response << "Content-Type: text/html; charset=UTF-8\n";
-			response << "Content-Lenght: " << test.str().length();
-			response << "\n\n";
-
-			response << test.str();
-			response << "\r\n\r\n";
-
-			std::cout << "RESPONSE: \n" << response.str() << "\n";
-			file.close();
-		}
-		else
-			response << "HTTP/1.1 404 Not Found\r\n\r\n";
-
-		write(client_fd, response.str().c_str(), response.str().length());
-		close(client_fd);
+		std::cerr << "socket() failed" << std::endl;
+		return (1);
 	}
+
+	//LINKED TO ADRESS AND PORT
+	struct sockaddr_in	address;
+	std::memset(&address, 0, sizeof(address));
+	address.sin_family = AF_INET;
+	address.sin_port = htons(8080);
+	address.sin_addr.s_addr = INADDR_ANY;
+
+	if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0)
+	{
+		std::cerr << "bind() failed" << std::endl;
+		return (1);
+	}
+
+	//LISTEN (max 10)
+	listen(server_fd, 10);
+	std::cout << "listening on port 8080 ..." << std::endl;
+
+	//ACCEPT CONNECTION
+	int	client_fd = accept(server_fd, NULL, NULL);
+	std::cout << "client connected" << std::endl;
+
+	//READ CLIENT
+	char	buffer[1024];
+	std::memset(buffer, 0, sizeof(buffer));
+	recv(client_fd, buffer, sizeof(buffer), 0);
+	std::cout << "received:\n" << buffer << std::endl;
+
+	//SEND HTTP RESPONSE
+	std::string	response =
+		"HTTP/1.1 200 OK\r\n"
+		"Content-length: 13\r\n"
+		"\r\n"
+		"Hello World!";
+	send(client_fd, response.c_str(), response.size(), 0);
+
+	close(client_fd);
+	close(server_fd);
 
 	return 0;
 }
