@@ -1,0 +1,17 @@
+# Ignore Everything
+*
+
+# But not theses
+!.git
+!.gitignore
+
+!main.cpp
+!Makefile
+
+!srcs/
+!include/
+
+!srcs/**
+!include/**
+
+!README.md
