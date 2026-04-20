@@ -1,44 +1,35 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fdeleard <fdeleard@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/20 12:29:41 by fdeleard          #+#    #+#             */
+/*   Updated: 2026/04/20 12:42:10 by fdeleard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <string>
 #include <fstream>
 #include <sstream>
-#include <string>
 #include <iostream>
 #include <unistd.h>
 
+#include "Server.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 
 int	main(void)
 {
-	int	server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd == -1)
-	{
-		std::cerr << "Socket creation failed\n";
-		return 1;
-	}
-
-	struct sockaddr_in	server_addr;
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = INADDR_ANY;
-	server_addr.sin_port = htons(8080);
-
-	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
-	{
-		std::cerr << "Server Bind failed\n";
-		return 1;
-	}
-
-	if (listen(server_fd, 5) < 0)
-	{
-		std::cerr << "Server Listen failed\n";
-		return 1;
-	}
+	Server	server;
 
 	while (42)
 	{
 		struct sockaddr_in	client_addr;
 
 		socklen_t	client_addr_len = sizeof(client_addr);
-		int	client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+		int	client_fd = accept(server.getServerFd(), (struct sockaddr *)&client_addr, &client_addr_len);
 		if (client_fd < 0)
 		{
 			std::cerr << "Client Accept failed\n";
@@ -66,7 +57,7 @@ int	main(void)
 
 		if (path == "/")
 		{
-			std::ifstream	file("index.html");
+			std::ifstream	file("www/index.html");
 			std::string		buffer;
 			std::stringstream	test;
 
@@ -86,7 +77,7 @@ int	main(void)
 		}
 		else if (path == "test")
 		{
-			std::ifstream	file("test");
+			std::ifstream	file("www/test");
 			std::string		buffer;
 			std::stringstream	test;
 
@@ -111,6 +102,5 @@ int	main(void)
 		close(client_fd);
 	}
 
-	close(server_fd);
 	return 0;
 }
