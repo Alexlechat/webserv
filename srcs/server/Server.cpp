@@ -9,9 +9,9 @@ Server::Server(void)
 {
 	try
 	{
-		initSocket(8080);
+		initSocket(DEFAULT_PORT);
 		bindSocket();
-		listenSocket(10);
+		listenSocket(LISTEN_MAX);
 	}
 	catch (const std::exception& e)
 	{

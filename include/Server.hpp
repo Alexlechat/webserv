@@ -4,6 +4,9 @@
 # include <string>
 # include <netinet/in.h>
 
+# define DEFAULT_PORT 8080
+# define LISTEN_MAX 100
+
 class	Server
 {
 	public:
