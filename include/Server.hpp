@@ -2,6 +2,7 @@
 # define Server_HPP
 
 # include <string>
+# include <exception>
 # include <netinet/in.h>
 
 # define DEFAULT_PORT 8080
@@ -10,10 +11,8 @@
 class	Server
 {
 	public:
-		Server(void);
+		Server(int port);
 		~Server(void);
-		Server(const Server& src);
-		Server&	operator=(const Server& rhs);
 
 		int	getServerFd(void) const;
 
@@ -32,9 +31,9 @@ class	Server
 		int					_fd;
 		struct sockaddr_in	_addr;
 
-		void	initSocket(int port);
-		void	bindSocket(void) const;
-		void	listenSocket(int maxConnections) const;
+		void	_initSocket(int port);
+		void	_bindSocket(void) const;
+		void	_listenSocket(int maxConnections) const;
 };
 
 #endif  // Server_HPP
