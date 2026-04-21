@@ -39,10 +39,10 @@ SRCS					:=				$(DIR_SRCS)/main.cpp \
 										$(DIR_SRCS)/server/EventLoop.cpp \
 										$(DIR_SRCS)/server/Server.cpp
 
-INCS					:=				$(DIR_INCS)/Client.hpp \
-										$(DIR_INCS)/ConfigParser.hpp \
-										$(DIR_INCS)/Server.hpp \
-										$(DIR_INCS)/EventLoop.hpp
+INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
+										$(DIR_INCS)/server/Client.hpp \
+										$(DIR_INCS)/server/EventLoop.hpp \
+										$(DIR_INCS)/server/Server.hpp
 
 
 
