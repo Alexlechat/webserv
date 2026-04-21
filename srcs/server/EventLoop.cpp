@@ -1,5 +1,5 @@
-#include "EventLoop.hpp"
-#include "Server.hpp"
+#include "server/EventLoop.hpp"
+#include "server/Server.hpp"
 
 #include <fcntl.h>
 #include <unistd.h>

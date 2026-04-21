@@ -1,9 +1,19 @@
-#include "ConfigParser.hpp"
-#include "EventLoop.hpp"
+#include "server/EventLoop.hpp"
+#include "config/ConfigParser.hpp"
+
+#include <iostream>
+#include <exception>
+
 int	main(void)
 {
-	EventLoop	loop;
+	try
+	{
+		ConfigParser	config("www/config");
+	}
+	catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
 
-	loop.run();
+	// EventLoop	loop;
+	//
+	// loop.run();
 	return 0;
 }
