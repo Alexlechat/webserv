@@ -4,16 +4,19 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "Socket.hpp"
 
 int	main(void)
 {
 	//CREATE SOCKET
-	int	server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd < 0)
-	{
-		std::cerr << "socket() failed" << std::endl;
-		return (1);
-	}
+	// int	socket._server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	// if (socket._server_fd < 0)
+	// {
+	// 	std::cerr << "socket() failed" << std::endl;
+	// 	return (1);
+	// }
+
+	Socket socket;
 
 	//LINKED TO ADRESS AND PORT
 	struct sockaddr_in	address;
@@ -22,18 +25,18 @@ int	main(void)
 	address.sin_port = htons(8080);
 	address.sin_addr.s_addr = INADDR_ANY;
 
-	if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0)
+	if (bind(socket.getFd(), (struct sockaddr*)&address, sizeof(address)) < 0)
 	{
 		std::cerr << "bind() failed" << std::endl;
 		return (1);
 	}
 
 	//LISTEN (max 10)
-	listen(server_fd, 10);
+	listen(socket.getFd(), 10);
 	std::cout << "listening on port 8080 ..." << std::endl;
 
 	//ACCEPT CONNECTION
-	int	client_fd = accept(server_fd, NULL, NULL);
+	int	client_fd = accept(socket.getFd(), NULL, NULL);
 	std::cout << "client connected" << std::endl;
 
 	//READ CLIENT
@@ -51,7 +54,7 @@ int	main(void)
 	send(client_fd, response.c_str(), response.size(), 0);
 
 	close(client_fd);
-	close(server_fd);
+
 
 	return 0;
 }

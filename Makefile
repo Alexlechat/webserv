@@ -34,8 +34,10 @@ CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
 #	SOURCES AND HEADERS
 SRCS					:=				$(DIR_SRCS)/main.cpp \
-										$(DIR_SRCS)/server/Server.cpp
-INCS					:=				$(DIR_INCS)/Server.hpp
+										$(DIR_SRCS)/server/Socket.cpp
+
+
+INCS					:=				
 
 
 
