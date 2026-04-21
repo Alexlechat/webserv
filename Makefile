@@ -34,11 +34,13 @@ CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
 #	SOURCES AND HEADERS
 SRCS					:=				$(DIR_SRCS)/main.cpp \
+										$(DIR_SRCS)/config/ConfigParser.cpp \
 										$(DIR_SRCS)/server/Client.cpp \
 										$(DIR_SRCS)/server/EventLoop.cpp \
 										$(DIR_SRCS)/server/Server.cpp
 
 INCS					:=				$(DIR_INCS)/Client.hpp \
+										$(DIR_INCS)/ConfigParser.hpp \
 										$(DIR_INCS)/Server.hpp \
 										$(DIR_INCS)/EventLoop.hpp
 
@@ -49,7 +51,7 @@ OBJS					:=				$(addprefix $(DIR_OBJS)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS					:=				$(addprefix $(DIR_DEPS)/, $(notdir $(SRCS:.cpp=.d)))
 
 
-vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server
+vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config
 
 #	ALL RULE
 .PHONY:			all
