@@ -14,8 +14,11 @@ class SocketServer : public Socket
         SocketServer();
         ~SocketServer();
 
+        struct sockaddr_in  getAddress();
+
         void    bindSocket();
         void    listenSocket(int maxConnections);
+        int     acceptClient();
 };
 
 #endif

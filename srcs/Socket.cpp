@@ -11,6 +11,8 @@ Socket::Socket()
         throw std::runtime_error("socket() failed");
 }
 
+Socket::Socket(int fd) : _fd(fd) {}
+
 Socket::~Socket()
 {
     if (_fd >= 0)

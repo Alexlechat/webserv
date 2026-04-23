@@ -6,38 +6,33 @@
 
 #include "Socket.hpp"
 #include "SocketServer.hpp"
+#include "SocketClient.hpp"
 
 int	main(void)
 {
 	try
 	{
 		SocketServer	socketServer;
-
-		socketServer.bindSocket();
-		socketServer.listenSocket(10);
-		std::cout << "listening on port 8080..." << std::endl;
-
-
-		//ACCEPT CONNECTION
-		int	client_fd = accept(socketServer.getFd(), NULL, NULL);
-		if (client_fd > 0)
-			std::cout << "client connected" << std::endl;
-
-		//READ CLIENT
-		char	buffer[1024];
-		std::memset(buffer, 0, sizeof(buffer));
-		if (recv(client_fd, buffer, sizeof(buffer), 0) != 0)
-			std::cout << "received:\n" << buffer << std::endl;
-
+		int				client_fd;
 		
-
-		//SEND HTTP RESPONSE
 		std::string	response =
 			"HTTP/1.1 200 OK\r\n"
 			"Content-length: 13\r\n"
 			"\r\n"
 			"Hello World!";
-		send(client_fd, response.c_str(), response.size(), 0);
+
+		socketServer.bindSocket();
+		socketServer.listenSocket(10);
+		std::cout << "listening on port 8080..." << std::endl;
+		client_fd = socketServer.acceptClient();
+		
+		//READ CLIENT
+		SocketClient	socketClient(client_fd);
+		if (socketClient.receiveData() > 0)
+			std::cout << "received:\n" << socketClient.getBufferRequest() << std::endl;
+
+		//SEND HTTP RESPONSE
+		socketClient.sendData(response);
 
 		close(client_fd);
 

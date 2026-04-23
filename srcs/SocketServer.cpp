@@ -1,5 +1,6 @@
 #include <cstring>
 #include <stdexcept>
+#include <iostream>
 
 #include "SocketServer.hpp"
 
@@ -13,6 +14,11 @@ SocketServer::SocketServer()
 
 SocketServer::~SocketServer() {}
 
+struct sockaddr_in  SocketServer::getAddress()
+{
+    return (_address);
+}
+
 void SocketServer::bindSocket()
 {
     if (bind(getFd(), (struct sockaddr*)&_address, sizeof(_address)) < 0)
@@ -23,4 +29,14 @@ void    SocketServer::listenSocket(int maxConnections)
 {
     if (listen(getFd(), maxConnections) < 0)
         throw std::runtime_error("listen() failed");
+}
+
+int    SocketServer::acceptClient()
+{
+    int client_fd = accept(getFd(), NULL, NULL);
+    if (client_fd < 0)
+        throw std::runtime_error("accept() failed");
+    std::cout << "client connected" << std::endl;
+
+    return (client_fd);
 }
