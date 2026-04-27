@@ -18,6 +18,8 @@ ConfigParser::ConfigParser(const std::string& configFilePath) : _pos(0)
 	_parse();
 }
 
+const std::vector<ServerConfig>&	ConfigParser::getServerConfigs(void) const { return _serversConfig; }
+
 std::string	ConfigParser::_getFileContent(const std::string& configFilePath)
 {
 	std::ifstream	file(configFilePath.c_str());

@@ -13,6 +13,8 @@ class	ConfigParser
 	public:
 		ConfigParser(const std::string& configFilePath);
 
+		const std::vector<ServerConfig>&	getServerConfigs(void) const;
+
 		class	ParseException : public std::exception
 		{
 			public:
@@ -39,6 +41,7 @@ class	ConfigParser
 		bool				_atEnd(void) const;
 		const std::string&	_current(void) const;
 		const std::string&	_consume(void);
+
 };
 
 #endif  // ConfigParser_HPP
