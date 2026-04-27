@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Webserv — localhost:9090</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background:#0f1117; color:#e2e8f0; padding:40px 20px; }
+        .container { max-width: 640px; margin: 0 auto; }
+        h1 { color: #b794f4; margin-bottom: 6px; }
+        .subtitle { color:#718096; margin-bottom:24px; }
+        .badge { display:inline-block; background:#1a202c; border:1px solid #553c9a;
+                 border-radius:6px; padding:2px 10px; font-size:0.75rem; color:#b794f4; margin-bottom:24px; }
+        p { color:#a0aec0; line-height:1.8; margin-bottom:16px; }
+        code { background:#1a202c; padding:2px 6px; border-radius:4px; color:#68d391; }
+        .note { background:#1a202c; border-left:3px solid #553c9a; padding:12px 16px;
+                border-radius:0 6px 6px 0; color:#a0aec0; font-size:0.875rem; }
+        a { color:#b794f4; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Second Server</h1>
+    <p class="subtitle">Running on a different port with autoindex enabled.</p>
+    <span class="badge">localhost:9090</span>
+
+    <p>This server block listens on port <code>9090</code> and serves files from <code>www/other/</code>.</p>
+    <p>It has <code>autoindex on</code> — if you request a directory without an index file, your server will generate a listing page automatically.</p>
+
+    <div class="note">
+        This page confirms your <code>EventLoop</code> correctly multiplexes multiple server sockets
+        through a single <code>poll()</code> call. Both port 8080 and 9090 are handled simultaneously.
+    </div>
+</div>
+</body>
+</html>
