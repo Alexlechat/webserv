@@ -34,12 +34,15 @@ CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
 #	SOURCES AND HEADERS
 SRCS					:=				$(DIR_SRCS)/main.cpp \
-										$(DIR_SRCS)/server/socket/Socket.cpp \
-										$(DIR_SRCS)/server/socket/SocketServer.cpp \
-										$(DIR_SRCS)/server/socket/SocketClient.cpp
+										$(DIR_SRCS)/config/ConfigParser.cpp \
+										$(DIR_SRCS)/server/Client.cpp \
+										$(DIR_SRCS)/server/EventLoop.cpp \
+										$(DIR_SRCS)/server/Server.cpp
 
-
-INCS					:=				
+INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
+										$(DIR_INCS)/server/Client.hpp \
+										$(DIR_INCS)/server/EventLoop.hpp \
+										$(DIR_INCS)/server/Server.hpp
 
 
 
@@ -48,7 +51,7 @@ OBJS					:=				$(addprefix $(DIR_OBJS)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS					:=				$(addprefix $(DIR_DEPS)/, $(notdir $(SRCS:.cpp=.d)))
 
 
-vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server
+vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config
 
 #	ALL RULE
 .PHONY:			all

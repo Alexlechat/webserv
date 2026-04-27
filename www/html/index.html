@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv — localhost:8080</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f1117;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 760px; margin: 0 auto; }
+        header { margin-bottom: 40px; border-bottom: 1px solid #2d3748; padding-bottom: 24px; }
+        h1 { font-size: 2rem; color: #63b3ed; }
+        h1 span { color: #68d391; }
+        .subtitle { color: #718096; margin-top: 6px; }
+        .badge {
+            display: inline-block;
+            background: #1a202c;
+            border: 1px solid #2d3748;
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-size: 0.75rem;
+            color: #68d391;
+            margin-top: 10px;
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px; }
+        .card {
+            background: #1a202c;
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .card h2 { font-size: 1rem; color: #90cdf4; margin-bottom: 8px; }
+        .card p { font-size: 0.875rem; color: #718096; line-height: 1.6; }
+        .card a {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #63b3ed;
+            text-decoration: none;
+            border: 1px solid #2b4c7e;
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+        .card a:hover { background: #2b4c7e; }
+        .routes { margin-top: 32px; }
+        .routes h2 { color: #90cdf4; margin-bottom: 12px; font-size: 1rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; color: #718096; padding: 6px 12px; border-bottom: 1px solid #2d3748; }
+        td { padding: 8px 12px; border-bottom: 1px solid #1a202c; }
+        .method { font-family: monospace; color: #68d391; }
+        .path { font-family: monospace; color: #fbb6ce; }
+        .upload-form {
+            margin-top: 32px;
+            background: #1a202c;
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            padding: 24px;
+        }
+        .upload-form h2 { color: #90cdf4; margin-bottom: 16px; font-size: 1rem; }
+        .upload-form input[type="file"] {
+            display: block;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+        }
+        .upload-form button {
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        .upload-form button:hover { background: #2c5282; }
+        footer { margin-top: 48px; color: #4a5568; font-size: 0.8rem; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Webserv <span>✓</span></h1>
+        <p class="subtitle">Your C++ HTTP server is running correctly.</p>
+        <span class="badge">localhost:8080</span>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <h2>📄 Static Files</h2>
+            <p>This page is a static HTML file served directly from <code>www/html/</code>.</p>
+            <a href="/about.html">about.html →</a>
+        </div>
+        <div class="card">
+            <h2>🔁 Redirect</h2>
+            <p>The <code>/old</code> route returns a 301 redirect to <code>/new</code>.</p>
+            <a href="/old">Test redirect →</a>
+        </div>
+        <div class="card">
+            <h2>❌ Error Pages</h2>
+            <p>Custom error pages are served for 404 and 500 responses.</p>
+            <a href="/doesnotexist">Trigger 404 →</a>
+        </div>
+        <div class="card">
+            <h2>🐍 CGI</h2>
+            <p>Scripts in <code>/cgi-bin</code> are executed via fork/execve.</p>
+            <a href="/cgi-bin/hello.py">hello.py →</a>
+        </div>
+    </div>
+
+    <div class="routes">
+        <h2>Configured Routes</h2>
+        <table>
+            <tr>
+                <th>Path</th>
+                <th>Methods</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td class="path">/</td>
+                <td class="method">GET</td>
+                <td>Static files from www/html</td>
+            </tr>
+            <tr>
+                <td class="path">/upload</td>
+                <td class="method">POST DELETE</td>
+                <td>File upload to www/uploads</td>
+            </tr>
+            <tr>
+                <td class="path">/cgi-bin</td>
+                <td class="method">GET POST</td>
+                <td>CGI scripts (.py .php)</td>
+            </tr>
+            <tr>
+                <td class="path">/old</td>
+                <td class="method">—</td>
+                <td>301 redirect to /new</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="upload-form">
+        <h2>📤 Test File Upload (POST /upload)</h2>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <button type="submit">Upload File</button>
+        </form>
+    </div>
+
+    <footer>Webserv — 42 Project &nbsp;|&nbsp; C++98 &nbsp;|&nbsp; HTTP/1.1</footer>
+</div>
+</body>
+</html>

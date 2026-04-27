@@ -7,6 +7,7 @@
 #include "Socket.hpp"
 #include "SocketServer.hpp"
 #include "SocketClient.hpp"
+#include "server/EventLoop.hpp"
 
 int	main(void)
 {
@@ -44,5 +45,8 @@ int	main(void)
 	}
 
 
+	EventLoop	loop;
+
+	loop.run();
 	return 0;
 }
