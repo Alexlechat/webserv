@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <iostream>
 #include <exception>
-#include <sys/poll.h>
 
 static void	set_nonblocking(int fd)
 {
@@ -26,7 +25,18 @@ static struct pollfd	make_pollfd(int fd, short	events)
 }
 
 EventLoop::EventLoop(void) {}
-EventLoop::~EventLoop(void) {}
+
+EventLoop::~EventLoop(void)
+{
+	std::vector<Server*>::iterator	serverIt;
+	std::vector<Client*>::iterator	clientIt;
+
+	for (serverIt = _servers.begin(); serverIt != _servers.end(); serverIt++)
+		delete *serverIt;
+
+	for (clientIt = _clients.begin(); clientIt != _clients.end(); clientIt++)
+		delete *clientIt;
+}
 
 void	EventLoop::addServer(Server* server)
 {
@@ -45,7 +55,7 @@ void	EventLoop::run(void)
 		std::vector<ServerConfig>::const_iterator	It;
 		for (It = configParser.getServerConfigs().begin(); It != configParser.getServerConfigs().end(); It++)
 		{
-			Server*	newServer = new Server(It->port);
+			Server*	newServer = new Server(*It);
 			std::cout << "New Server added : " << It->server_name << ":" << It->port << std::endl;
 			addServer(newServer);
 		}
@@ -82,10 +92,17 @@ void	EventLoop::run(void)
 bool	EventLoop::_isServerFd(int fd) const
 {
 	for (size_t i = 0; i < _servers.size(); ++i)
-		if (_servers[i]->getServerFd() == fd)
-			return true;
+		if (_servers[i]->getServerFd() == fd) return true;
 
 	return false;
+}
+
+Server*	EventLoop::_getServerByFd(int fd) const
+{
+	for (size_t i = 0; i < _servers.size(); ++i)
+		if (_servers[i]->getServerFd() == fd) return _servers[i];
+
+	return NULL;
 }
 
 void	EventLoop::_acceptNewClient(int server_fd)
@@ -103,7 +120,7 @@ void	EventLoop::_acceptNewClient(int server_fd)
 	set_nonblocking(client_fd);
  
 	_fds.push_back(make_pollfd(client_fd, POLLIN));
-	_clients.push_back(new Client(client_fd));
+	_clients.push_back(new Client(client_fd, _getServerByFd(server_fd)->getServerConfig()));
  
 	std::cout << "New client fd=" << client_fd << "\n";
 }
@@ -125,14 +142,8 @@ void	EventLoop::_handleRead(int i)
 	buf[n] = '\0';
 	client.getRecvBuf() += buf;
  
-	if (client.isRequestComplete())
-	{
-		std::cout << "REQUEST (fd=" << _fds[i].fd << "):\n"
-				  << client.getRecvBuf() << "\n";
- 
-		client.buildResponse();
+	if (client.tryBuildResponse())
 		_fds[i].events = POLLOUT;
-	}
 }
  
 void	EventLoop::_handleWrite(int i)
@@ -142,8 +153,7 @@ void	EventLoop::_handleWrite(int i)
  
 	ssize_t n = send(_fds[i].fd, buf.c_str(), buf.size(), 0);
  
-	if (n > 0)
-		buf.erase(0, n);
+	if (n > 0) buf.erase(0, n);
  
 	if (buf.empty() || n <= 0)
 	{

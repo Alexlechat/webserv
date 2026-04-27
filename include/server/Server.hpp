@@ -1,6 +1,8 @@
 #ifndef Server_HPP
 # define Server_HPP
 
+# include "config/ServerConfig.hpp"
+
 # include <string>
 # include <exception>
 # include <netinet/in.h>
@@ -11,10 +13,11 @@
 class	Server
 {
 	public:
-		Server(int port);
+		Server(ServerConfig serverConfig);
 		~Server(void);
 
-		int	getServerFd(void) const;
+		int					getServerFd(void) const;
+		const ServerConfig&	getServerConfig(void) const;
 
 		class	ServerException : public std::exception
 		{
@@ -30,6 +33,7 @@ class	Server
 	private:
 		int					_fd;
 		struct sockaddr_in	_addr;
+		ServerConfig		_serverConfig;
 
 		void	_initSocket(int port);
 		void	_bindSocket(void) const;
