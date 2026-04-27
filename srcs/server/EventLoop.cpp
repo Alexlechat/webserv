@@ -1,9 +1,11 @@
+#include "config/ConfigParser.hpp"
 #include "server/EventLoop.hpp"
 #include "server/Server.hpp"
 
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
+#include <exception>
 #include <sys/poll.h>
 
 static void	set_nonblocking(int fd)
@@ -36,11 +38,19 @@ void	EventLoop::addServer(Server* server)
 
 void	EventLoop::run(void)
 {
-	Server	server1(8080);
-	Server	server2(9090);
+	try
+	{
+		ConfigParser	configParser("./www/config");
 
-	addServer(&server1);
-	addServer(&server2);
+		std::vector<ServerConfig>::const_iterator	It;
+		for (It = configParser.getServerConfigs().begin(); It != configParser.getServerConfigs().end(); It++)
+		{
+			Server*	newServer = new Server(It->port);
+			std::cout << "New Server added : " << It->server_name << ":" << It->port << std::endl;
+			addServer(newServer);
+		}
+	}
+	catch (const std::exception& e) { std::cerr << e.what() << std::endl; return; }
 
 	while (true)
 	{
