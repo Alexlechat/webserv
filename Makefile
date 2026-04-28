@@ -37,12 +37,16 @@ SRCS					:=				$(DIR_SRCS)/main.cpp \
 										$(DIR_SRCS)/config/ConfigParser.cpp \
 										$(DIR_SRCS)/server/Client.cpp \
 										$(DIR_SRCS)/server/EventLoop.cpp \
-										$(DIR_SRCS)/server/Server.cpp
+										$(DIR_SRCS)/server/Server.cpp \
+										$(DIR_SRCS)/request/HttpRequest.cpp \
+										$(DIR_SRCS)/request/Response.cpp
 
 INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
 										$(DIR_INCS)/server/Client.hpp \
 										$(DIR_INCS)/server/EventLoop.hpp \
-										$(DIR_INCS)/server/Server.hpp
+										$(DIR_INCS)/server/Server.hpp \
+										$(DIR_INCS)/request/HttpRequest.hpp \
+										$(DIR_INCS)/request/Response.hpp
 
 
 
@@ -51,7 +55,7 @@ OBJS					:=				$(addprefix $(DIR_OBJS)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS					:=				$(addprefix $(DIR_DEPS)/, $(notdir $(SRCS:.cpp=.d)))
 
 
-vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config
+vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config $(DIR_SRCS)/request
 
 #	ALL RULE
 .PHONY:			all

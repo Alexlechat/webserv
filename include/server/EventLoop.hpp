@@ -13,7 +13,7 @@ class	EventLoop
 		EventLoop(void);
 		~EventLoop(void);
 
-		void	run(void);
+		int		run(void);
 		void	addServer(Server* server);
 
 	private:
@@ -22,6 +22,8 @@ class	EventLoop
 		std::vector<Client*>		_clients;
 
 		bool	_isServerFd(int fd) const;
+		Server*	_getServerByFd(int fd) const;
+
 		void	_acceptNewClient(int server_fd);
 		void	_handleRead(int i);
 		void	_handleWrite(int i);

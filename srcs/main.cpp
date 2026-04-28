@@ -4,6 +4,5 @@ int	main(void)
 {
 	EventLoop	loop;
 
-	loop.run();
-	return 0;
+	return loop.run();
 }

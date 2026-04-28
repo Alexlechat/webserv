@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-Server::Server(int port) : _fd(-1)
+Server::Server(ServerConfig serverConfig) : _fd(-1), _serverConfig(serverConfig)
 {
-	_initSocket(port);
+	_initSocket(_serverConfig.port);
 	_bindSocket();
 	_listenSocket(LISTEN_MAX);
 }
@@ -43,4 +43,5 @@ void	Server::_listenSocket(int maxConnections) const
 		throw ServerException("Socket listen failure");
 }
 
-int	Server::getServerFd(void) const { return _fd; }
+int					Server::getServerFd(void) const { return _fd; }
+const ServerConfig&	Server::getServerConfig(void) const { return _serverConfig; }
