@@ -8,8 +8,8 @@
 
 class SocketClient : public Socket
 {
-    private:
-        std::string _bufferRequest;   
+    protected:
+        std::string _bufferRequest;
 
     public:
         SocketClient(int fd);

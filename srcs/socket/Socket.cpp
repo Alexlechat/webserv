@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <sys/socket.h>
 
-#include "Socket.hpp"
+#include "socket/Socket.hpp"
 
 Socket::Socket()
 {

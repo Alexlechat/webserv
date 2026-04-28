@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "SocketServer.hpp"
+#include "socket/SocketServer.hpp"
 
 SocketServer::SocketServer()
 {

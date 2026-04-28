@@ -99,21 +99,21 @@ void	EventLoop::_acceptNewClient(int server_fd)
 		std::cerr << "accept(): failure\n";
 		return;
 	}
- 
+
 	set_nonblocking(client_fd);
- 
+
 	_fds.push_back(make_pollfd(client_fd, POLLIN));
 	_clients.push_back(new Client(client_fd));
- 
+
 	std::cout << "New client fd=" << client_fd << "\n";
 }
- 
+
 void	EventLoop::_handleRead(int i)
 {
 	Client&	client = *_clients[i];
 	char	buf[4096];
 	ssize_t	n = recv(_fds[i].fd, buf, sizeof(buf) - 1, 0);
- 
+
 	if (n <= 0)
 	{
 		// n == 0 → client closed connection cleanly
@@ -121,37 +121,37 @@ void	EventLoop::_handleRead(int i)
 		_removeClient(i);
 		return;
 	}
- 
+
 	buf[n] = '\0';
 	client.getRecvBuf() += buf;
- 
+
 	if (client.isRequestComplete())
 	{
 		std::cout << "REQUEST (fd=" << _fds[i].fd << "):\n"
-				  << client.getRecvBuf() << "\n";
- 
+					<< client.getRecvBuf() << "\n";
+
 		client.buildResponse();
 		_fds[i].events = POLLOUT;
 	}
 }
- 
+
 void	EventLoop::_handleWrite(int i)
 {
 	Client&		client = *_clients[i];
 	std::string&	buf = client.getSendBuf();
- 
+
 	ssize_t n = send(_fds[i].fd, buf.c_str(), buf.size(), 0);
- 
+
 	if (n > 0)
 		buf.erase(0, n);
- 
+
 	if (buf.empty() || n <= 0)
 	{
 		std::cout << "Response sent, closing fd=" << _fds[i].fd << "\n";
 		_removeClient(i);
 	}
 }
- 
+
 void	EventLoop::_removeClient(int i)
 {
 	close(_fds[i].fd);

@@ -3,26 +3,26 @@
 
 # include <string>
 
-class	Client
+# include "socket/SocketClient.hpp"
+
+class	Client : public SocketClient
 {
+	private:
+		std::string	_sendBuffer;
+
+		std::string	_parsePathFromRequest(void) const;
+		std::string	_readFile(const std::string& filepath) const;
+
 	public:
 		Client(int fd);
 		~Client(void);
 
-		int				getFd(void) const;
-		std::string&	getRecvBuf(void);
-		std::string&	getSendBuf(void);
+		std::string& getRecvBuf();
+        std::string& getSendBuf();
 
 		bool	isRequestComplete(void) const;
 		void	buildResponse(void);
 
-	private:
-		int			_fd;
-		std::string	_recv_buf;
-		std::string	_send_buf;
-
-		std::string	_parsePathFromRequest(void) const;
-		std::string	_readFile(const std::string& filepath) const;
 };
 
-#endif  // Client_HPP
+#endif

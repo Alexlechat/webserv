@@ -1,6 +1,6 @@
 #include <stdexcept>
 
-#include "SocketClient.hpp"
+#include "socket/SocketClient.hpp"
 
 SocketClient::SocketClient(int fd) : Socket(fd) {}
 
