@@ -338,8 +338,6 @@ static const LocationConfig* findLocation(const ServerConfig& config,
 	return best;
 }
 
-#include <iostream>
-
 std::string buildResponse(const HttpRequest& req, const ServerConfig& config)
 {
 	// ── 1. Find matching location ─────────────────────────────────────────────

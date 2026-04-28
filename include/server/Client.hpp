@@ -22,8 +22,8 @@ class	Client
 		int					_fd;
 		std::string			_recv_buf;
 		std::string			_send_buf;
-		const ServerConfig&	_serverConfig;
 		HttpRequest			_request;
+		const ServerConfig&	_serverConfig;
 
 		std::string		_parsePathFromRequest(void) const;
 		std::string		_readFile(const std::string& filepath) const;
