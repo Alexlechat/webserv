@@ -46,7 +46,7 @@ void	EventLoop::addServer(Server* server)
 	_clients.push_back(NULL);
 }
 
-void	EventLoop::run(void)
+int	EventLoop::run(void)
 {
 	try
 	{
@@ -60,7 +60,7 @@ void	EventLoop::run(void)
 			addServer(newServer);
 		}
 	}
-	catch (const std::exception& e) { std::cerr << e.what() << std::endl; return; }
+	catch (const std::exception& e) { std::cerr << e.what() << std::endl; return 1; }
 
 	while (true)
 	{
@@ -87,6 +87,8 @@ void	EventLoop::run(void)
 				_handleWrite(i);
 		}
 	}
+
+	return 0;
 }
 
 bool	EventLoop::_isServerFd(int fd) const

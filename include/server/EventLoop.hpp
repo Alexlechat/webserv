@@ -13,7 +13,7 @@ class	EventLoop
 		EventLoop(void);
 		~EventLoop(void);
 
-		void	run(void);
+		int		run(void);
 		void	addServer(Server* server);
 
 	private:
