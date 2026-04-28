@@ -4,11 +4,11 @@
 
 #include "socket/SocketServer.hpp"
 
-SocketServer::SocketServer()
+SocketServer::SocketServer(int port)
 {
     std::memset(&_address, 0, sizeof(_address));
     _address.sin_family = AF_INET;
-    _address.sin_port = htons(8080);
+    _address.sin_port = htons(port);
     _address.sin_addr.s_addr = INADDR_ANY;
 }
 

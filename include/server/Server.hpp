@@ -5,10 +5,12 @@
 # include <exception>
 # include <netinet/in.h>
 
+#include "socket/SocketServer.hpp"
+
 # define DEFAULT_PORT 8080
 # define LISTEN_MAX 100
 
-class	Server
+class	Server : public SocketServer
 {
 	public:
 		Server(int port);
@@ -27,13 +29,13 @@ class	Server
 				std::string _msg;
 		};
 
-	private:
-		int					_fd;
-		struct sockaddr_in	_addr;
+	// private:
+	// 	int					_fd;
+	// 	struct sockaddr_in	_addr;
 
-		void	_initSocket(int port);
-		void	_bindSocket(void) const;
-		void	_listenSocket(int maxConnections) const;
+	// 	void	_initSocket(int port);
+	// 	void	_bindSocket(void) const;
+	// 	void	_listenSocket(int maxConnections) const;
 };
 
 #endif  // Server_HPP

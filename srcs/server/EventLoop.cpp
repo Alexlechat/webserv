@@ -30,8 +30,8 @@ EventLoop::~EventLoop(void) {}
 
 void	EventLoop::addServer(Server* server)
 {
-	set_nonblocking(server->getServerFd());
-	_fds.push_back(make_pollfd(server->getServerFd(), POLLIN));
+	set_nonblocking(server->getFd());
+	_fds.push_back(make_pollfd(server->getFd(), POLLIN));
 	_servers.push_back(server);
 	_clients.push_back(NULL);
 }
@@ -82,7 +82,7 @@ void	EventLoop::run(void)
 bool	EventLoop::_isServerFd(int fd) const
 {
 	for (size_t i = 0; i < _servers.size(); ++i)
-		if (_servers[i]->getServerFd() == fd)
+		if (_servers[i]->getFd() == fd)
 			return true;
 
 	return false;
