@@ -1,17 +1,17 @@
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
 
-class Socket
+class	Socket
 {
+    public:
+        Socket(void);
+		Socket(int fd);
+        ~Socket(void);
+
+        int	getSocketFD(void) const;
+
     private:
         int _fd;
-
-    public:
-        Socket();
-        Socket(int fd);
-        ~Socket();
-
-        int getFd();
 };
 
 #endif

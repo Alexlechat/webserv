@@ -1,29 +1,7 @@
-#include <stdexcept>
-
-#include "SocketClient.hpp"
+#include "socket/SocketClient.hpp"
 
 SocketClient::SocketClient(int fd) : Socket(fd) {}
+SocketClient::~SocketClient(void) {}
 
-SocketClient::~SocketClient() {}
-
-std::string SocketClient::getBufferRequest()
-{
-    return (_bufferRequest);
-}
-
-int    SocketClient::receiveData()
-{
-    char    buffer[1024];
-    int     bytes;
-
-    bytes = recv(getFd(), buffer, sizeof(buffer), 0);
-    if (bytes > 0)
-        _bufferRequest.append(buffer, bytes);
-
-    return (bytes);
-}
-
-int SocketClient::sendData(const std::string& response)
-{
-    return (send(getFd(), response.c_str(), response.size(), 0));
-}
+std::string& SocketClient::getRecvBuf(void) { return _recv_buf; }
+std::string& SocketClient::getSendBuf(void) { return _send_buf; }

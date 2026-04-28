@@ -8,18 +8,16 @@
 
 class SocketClient : public Socket
 {
-    private:
-        std::string _bufferRequest;   
+    protected:
+		std::string			_recv_buf;
+		std::string			_send_buf;
 
     public:
         SocketClient(int fd);
         ~SocketClient();
 
-        std::string getBufferRequest();
-
-        int    receiveData();
-        int    sendData(const std::string& response);
-
+        std::string& getRecvBuf();
+        std::string& getSendBuf();
 };
 
 #endif

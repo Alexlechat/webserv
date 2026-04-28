@@ -2,24 +2,21 @@
 #include <stdexcept>
 #include <sys/socket.h>
 
-#include "Socket.hpp"
+#include "socket/Socket.hpp"
 
-Socket::Socket()
+Socket::Socket(void)
 {
     _fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_fd < 0)
         throw std::runtime_error("socket() failed");
 }
 
-Socket::Socket(int fd) : _fd(fd) {}
-
-Socket::~Socket()
+Socket::~Socket(void)
 {
     if (_fd >= 0)
         close(_fd);
 }
 
-int Socket::getFd()
-{
-    return (_fd);
-}
+Socket::Socket(int fd) : _fd(fd) {}
+
+int Socket::getSocketFD() const { return (_fd); }

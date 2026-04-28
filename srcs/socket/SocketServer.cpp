@@ -2,13 +2,16 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "SocketServer.hpp"
+#include "socket/SocketServer.hpp"
 
-SocketServer::SocketServer()
+SocketServer::SocketServer(int port)
 {
+    int	opt = 1;
+	setsockopt(getSocketFD(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
     std::memset(&_address, 0, sizeof(_address));
     _address.sin_family = AF_INET;
-    _address.sin_port = htons(8080);
+    _address.sin_port = htons(port);
     _address.sin_addr.s_addr = INADDR_ANY;
 }
 
@@ -21,19 +24,19 @@ struct sockaddr_in  SocketServer::getAddress()
 
 void SocketServer::bindSocket()
 {
-    if (bind(getFd(), (struct sockaddr*)&_address, sizeof(_address)) < 0)
+    if (bind(getSocketFD(), (struct sockaddr*)&_address, sizeof(_address)) < 0)
         throw std::runtime_error("bind() failed");
 }
 
 void    SocketServer::listenSocket(int maxConnections)
 {
-    if (listen(getFd(), maxConnections) < 0)
+    if (listen(getSocketFD(), maxConnections) < 0)
         throw std::runtime_error("listen() failed");
 }
 
 int    SocketServer::acceptClient()
 {
-    int client_fd = accept(getFd(), NULL, NULL);
+    int client_fd = accept(getSocketFD(), NULL, NULL);
     if (client_fd < 0)
         throw std::runtime_error("accept() failed");
     std::cout << "client connected" << std::endl;
