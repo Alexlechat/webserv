@@ -9,7 +9,8 @@
 class SocketClient : public Socket
 {
     protected:
-        std::string _bufferRequest;
+		std::string			_recv_buf;
+		std::string			_send_buf;
 
     public:
         SocketClient(int fd);

@@ -1,28 +1,31 @@
 #ifndef Client_HPP
 # define Client_HPP
 
+# include "config/ServerConfig.hpp"
+# include "request/HttpRequest.hpp"
+
 # include <string>
 
 # include "socket/SocketClient.hpp"
 
 class	Client : public SocketClient
 {
-	private:
-		std::string	_sendBuffer;
-
-		std::string	_parsePathFromRequest(void) const;
-		std::string	_readFile(const std::string& filepath) const;
-
 	public:
-		Client(int fd);
+		Client(int fd, const ServerConfig& serverConfig);
 		~Client(void);
 
 		std::string& getRecvBuf();
         std::string& getSendBuf();
 
-		bool	isRequestComplete(void) const;
-		void	buildResponse(void);
+		bool			tryBuildResponse(void);
 
+	private:
+
+		HttpRequest			_request;
+		const ServerConfig&	_serverConfig;
+
+		std::string		_parsePathFromRequest(void) const;
+		std::string		_readFile(const std::string& filepath) const;
 };
 
 #endif

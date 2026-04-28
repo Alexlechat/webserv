@@ -1,22 +1,25 @@
 #ifndef Server_HPP
 # define Server_HPP
 
+# include "config/ServerConfig.hpp"
+# include "socket/SocketServer.hpp"
+
 # include <string>
 # include <exception>
 # include <netinet/in.h>
 
-#include "socket/SocketServer.hpp"
-
-# define DEFAULT_PORT 8080
 # define LISTEN_MAX 100
 
 class	Server : public SocketServer
 {
 	public:
-		Server(int port);
+		Server(ServerConfig serverConfig);
 		~Server(void);
 
-		int	getServerFd(void) const;
+		const ServerConfig&	getServerConfig(void) const;
+
+	private:
+		ServerConfig		_serverConfig;
 };
 
 #endif  // Server_HPP
