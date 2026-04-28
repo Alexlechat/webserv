@@ -92,7 +92,7 @@ void	EventLoop::run(void)
 bool	EventLoop::_isServerFd(int fd) const
 {
 	for (size_t i = 0; i < _servers.size(); ++i)
-		if (_servers[i]->getServerFd() == fd) return true;
+		if (_servers[i]->getFd() == fd) return true;
 
 	return false;
 }
@@ -100,7 +100,7 @@ bool	EventLoop::_isServerFd(int fd) const
 Server*	EventLoop::_getServerByFd(int fd) const
 {
 	for (size_t i = 0; i < _servers.size(); ++i)
-		if (_servers[i]->getServerFd() == fd) return _servers[i];
+		if (_servers[i]->getFd() == fd) return _servers[i];
 
 	return NULL;
 }

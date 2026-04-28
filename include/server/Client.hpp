@@ -3,10 +3,9 @@
 
 # include "config/ServerConfig.hpp"
 # include "request/HttpRequest.hpp"
+# include "socket/SocketClient.hpp"
 
 # include <string>
-
-# include "socket/SocketClient.hpp"
 
 class	Client : public SocketClient
 {
@@ -14,18 +13,11 @@ class	Client : public SocketClient
 		Client(int fd, const ServerConfig& serverConfig);
 		~Client(void);
 
-		std::string& getRecvBuf();
-        std::string& getSendBuf();
-
-		bool			tryBuildResponse(void);
+		bool	tryBuildResponse(void);
 
 	private:
-
 		HttpRequest			_request;
 		const ServerConfig&	_serverConfig;
-
-		std::string		_parsePathFromRequest(void) const;
-		std::string		_readFile(const std::string& filepath) const;
 };
 
 #endif

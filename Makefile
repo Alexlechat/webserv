@@ -40,7 +40,7 @@ SRCS					:=				$(DIR_SRCS)/main.cpp \
 										$(DIR_SRCS)/server/Server.cpp \
 										$(DIR_SRCS)/socket/Socket.cpp \
 										$(DIR_SRCS)/socket/SocketClient.cpp \
-										$(DIR_SRCS)/socket/SocketServer.cpp
+										$(DIR_SRCS)/socket/SocketServer.cpp \
 										$(DIR_SRCS)/request/HttpRequest.cpp \
 										$(DIR_SRCS)/request/Response.cpp
 
@@ -50,7 +50,7 @@ INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
 										$(DIR_INCS)/server/Server.hpp \
 										$(DIR_INCS)/socket/Socket.hpp \
 										$(DIR_INCS)/socket/SocketClient.hpp \
-										$(DIR_INCS)/socket/SocketServer.hpp
+										$(DIR_INCS)/socket/SocketServer.hpp \
 										$(DIR_INCS)/request/HttpRequest.hpp \
 										$(DIR_INCS)/request/Response.hpp
 

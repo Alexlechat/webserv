@@ -6,6 +6,7 @@
 
 Server::Server(ServerConfig serverConfig) : SocketServer(serverConfig.port)
 {
+	_serverConfig = serverConfig;
 	bindSocket();
 	listenSocket(LISTEN_MAX);
 }

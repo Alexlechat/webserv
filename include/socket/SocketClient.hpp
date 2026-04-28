@@ -16,11 +16,8 @@ class SocketClient : public Socket
         SocketClient(int fd);
         ~SocketClient();
 
-        std::string getBufferRequest();
-
-        int    receiveData();
-        int    sendData(const std::string& response);
-
+        std::string& getRecvBuf();
+        std::string& getSendBuf();
 };
 
 #endif

@@ -6,6 +6,9 @@
 
 SocketServer::SocketServer(int port)
 {
+    int	opt = 1;
+	setsockopt(getFd(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
     std::memset(&_address, 0, sizeof(_address));
     _address.sin_family = AF_INET;
     _address.sin_port = htons(port);
