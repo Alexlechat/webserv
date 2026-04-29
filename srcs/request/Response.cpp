@@ -37,18 +37,18 @@ static std::string statusMsg(int code)
 
 // Assemble a complete HTTP response
 static std::string makeResponse(int code,
-                                 const std::string& contentType,
-                                 const std::string& body,
-                                 const std::string& extra = "")
+                                const std::string& contentType,
+                                const std::string& body,
+                                const std::string& extra = "")
 {
 	std::ostringstream r;
 	r << "HTTP/1.1 " << code << " " << statusMsg(code) << "\r\n"
-	  << "Content-Type: "   << contentType << "\r\n"
-	  << "Content-Length: " << body.size() << "\r\n"
-	  << "Connection: close\r\n"
-	  << extra
-	  << "\r\n"
-	  << body;
+		<< "Content-Type: "   << contentType << "\r\n"
+		<< "Content-Length: " << body.size() << "\r\n"
+		<< "Connection: close\r\n"
+		<< extra
+		<< "\r\n"
+		<< body;
 	return r.str();
 }
 

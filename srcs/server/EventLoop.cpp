@@ -99,7 +99,7 @@ bool	EventLoop::_isServerFd(int fd) const
 
 Server*	EventLoop::_getServerByFd(int fd) const
 {
-	for (size_t i = 0; i < _servers.size(); ++i)
+	for (size_t i = 0; i < _servers.size(); ++i) 
 		if (_servers[i]->getFd() == fd) return _servers[i];
 
 	return NULL;
@@ -121,7 +121,7 @@ void	EventLoop::_acceptNewClient(int server_fd)
 
 	_fds.push_back(make_pollfd(client_fd, POLLIN));
 	_clients.push_back(new Client(client_fd, _getServerByFd(server_fd)->getServerConfig()));
- 
+
 	std::cout << "New client fd=" << client_fd << "\n";
 }
 
