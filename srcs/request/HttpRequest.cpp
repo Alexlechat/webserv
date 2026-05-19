@@ -86,3 +86,10 @@ bool	parseRequest(const std::string& raw, HttpRequest& req)
 	req.complete = true;
 	return true;
 }
+
+std::string	HttpRequest::requestLineToStr(void) const
+{
+	std::string	out = method + " " + path + " " + version;
+
+	return out;
+}

@@ -5,7 +5,6 @@
 # include "request/HttpRequest.hpp"
 # include "socket/SocketClient.hpp"
 
-# include <string>
 
 class	Client : public SocketClient
 {

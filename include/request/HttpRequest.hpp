@@ -14,8 +14,10 @@ struct	HttpRequest
 	bool								complete;
 
 	HttpRequest(void) : complete(false) {};
+
+	std::string	requestLineToStr(void) const;
 };
 
-bool	parseRequest(const std::string& raw, HttpRequest& req);
+bool		parseRequest(const std::string& raw, HttpRequest& req);
 
 #endif  // HttpRequest_HPP

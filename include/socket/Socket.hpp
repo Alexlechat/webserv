@@ -4,14 +4,15 @@
 class Socket
 {
     private:
-        int _fd;
+        int	_fd;
 
     public:
-        Socket();
+        Socket(void);
         Socket(int fd);
-        ~Socket();
+        ~Socket(void);
 
-        int getFd();
+        int		getSocketFd(void) const;
+		void	setNonBlocking(void) const;
 };
 
 #endif
