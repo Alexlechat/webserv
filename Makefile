@@ -42,7 +42,12 @@ SRCS					:=				$(DIR_SRCS)/main.cpp \
 										$(DIR_SRCS)/socket/SocketClient.cpp \
 										$(DIR_SRCS)/socket/SocketServer.cpp \
 										$(DIR_SRCS)/request/HttpRequest.cpp \
-										$(DIR_SRCS)/request/Response.cpp
+										$(DIR_SRCS)/request/Response.cpp \
+										$(DIR_SRCS)/logger/Logger.cpp \
+										$(DIR_SRCS)/logger/ConsoleLogger.cpp \
+										$(DIR_SRCS)/logger/FileLogger.cpp \
+										$(DIR_SRCS)/logger/MultiLogger.cpp 
+
 
 INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
 										$(DIR_INCS)/server/Client.hpp \
@@ -52,7 +57,12 @@ INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
 										$(DIR_INCS)/socket/SocketClient.hpp \
 										$(DIR_INCS)/socket/SocketServer.hpp \
 										$(DIR_INCS)/request/HttpRequest.hpp \
-										$(DIR_INCS)/request/Response.hpp
+										$(DIR_INCS)/request/Response.hpp \
+										$(DIR_INCS)/logger/Logger.hpp \
+										$(DIR_INCS)/logger/ConsoleLogger.hpp \
+										$(DIR_INCS)/logger/FileLogger.hpp \
+										$(DIR_INCS)/logger/MultiLogger.hpp \
+										$(DIR_INCS)/utils/Utils.hpp
 
 
 
@@ -61,7 +71,7 @@ OBJS					:=				$(addprefix $(DIR_OBJS)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS					:=				$(addprefix $(DIR_DEPS)/, $(notdir $(SRCS:.cpp=.d)))
 
 
-vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config $(DIR_SRCS)/socket $(DIR_SRCS)/request
+vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config $(DIR_SRCS)/socket $(DIR_SRCS)/request $(DIR_SRCS)/logger $(DIR_SRCS)/utils
 
 
 #	ALL RULE
