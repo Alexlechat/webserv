@@ -16,7 +16,7 @@ std::string buildRedirectResponse(int code, const std::string& location);
 std::string buildStaticResponse(const std::string& filepath);
 std::string buildAutoindexResponse(const std::string& dirPath,
                                     const std::string& urlPath);
-std::string buildUploadResponse(const HttpRequest& req, const LocationConfig& loc);
+std::string buildUploadResponse(const HttpRequest& req, const LocationConfig& loc, const ServerConfig& config);
 std::string buildDeleteResponse(const std::string& filepath);
 
 // ─── Utilities ────────────────────────────────────────────────────────────────

@@ -5,8 +5,12 @@
 # include <vector>
 # include <exception>
 
+# include "config/FileLoggerConfig.hpp"
 # include "config/ServerConfig.hpp"
 # include "config/LocationConfig.hpp"
+
+# define DEFAULT_ERROR_LOG_MIN_LEVEL "error"
+# define DEFAULT_ERROR_LOG_FILEPATH "logs/error.log"
 
 class	ConfigParser
 {
@@ -27,9 +31,11 @@ class	ConfigParser
 		};
 
 	private:
-		std::vector<ServerConfig>	_serversConfig;
 		std::vector<std::string>	_tokens;
 		size_t						_pos;
+
+		std::vector<ServerConfig>	_serversConfig;
+		FileLoggerConfig			_globalFileLoggerConfig;
 
 		void				_parse(void);
 		ServerConfig		_parseServer(void);

@@ -11,7 +11,7 @@ class	MultiLogger : public Logger
 		MultiLogger(void) : Logger() {}
 		virtual ~MultiLogger(void) {}
 
-		void	addLogger(Logger* logger);
+		void			addLogger(Logger* logger);
 		virtual void	log(const std::string& msg, LogLevel level, const char* file, int line);
 
 	private:

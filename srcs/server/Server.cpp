@@ -1,8 +1,10 @@
 #include "server/Server.hpp"
 
-Server::Server(ServerConfig serverConfig) : SocketServer(serverConfig.port)
+Server::Server(ServerConfig serverConfig)
+	: SocketServer(serverConfig.port),
+	  _serverConfig(serverConfig),
+	  _file(serverConfig.logConfig)
 {
-	_serverConfig = serverConfig;
 	bindSocket();
 	listenSocket(LISTEN_MAX);
 }

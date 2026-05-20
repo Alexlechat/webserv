@@ -4,6 +4,9 @@
 # include "config/ServerConfig.hpp"
 # include "socket/SocketServer.hpp"
 
+# include "logger/FileLogger.hpp"
+# include "logger/ConsoleLogger.hpp"
+
 # define LISTEN_MAX 100
 
 class	Server : public SocketServer
@@ -16,6 +19,9 @@ class	Server : public SocketServer
 
 	private:
 		ServerConfig		_serverConfig;
+
+		FileLogger			_file;
+		ConsoleLogger		_console;
 };
 
 #endif  // Server_HPP

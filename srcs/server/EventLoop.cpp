@@ -1,21 +1,18 @@
 #include "config/ConfigParser.hpp"
 #include "server/EventLoop.hpp"
+#include "logger/ConsoleLogger.hpp"
 #include "logger/Logger.hpp"
 #include "server/Client.hpp"
 #include "server/Server.hpp"
 
-#include "logger/FileLogger.hpp"
-#include "logger/MultiLogger.hpp"
-#include "logger/ConsoleLogger.hpp"
 #include "utils/Utils.hpp"
 
 #include <fcntl.h>
-#include <sys/poll.h>
 #include <unistd.h>
-#include <iostream>
 #include <exception>
+#include <sys/poll.h>
 
-static struct pollfd	make_pollfd(int fd, short	events)
+static struct pollfd	make_pollfd(int fd, short events)
 {
 	struct pollfd	pfd;
 
@@ -26,10 +23,9 @@ static struct pollfd	make_pollfd(int fd, short	events)
 	return pfd;
 }
 
-EventLoop::EventLoop(void) : _consoleLogger(true), _fileLogger("webserv.log", false), _logger()
+EventLoop::EventLoop(void) : _logger()
 {
-	_logger.addLogger(&_consoleLogger);
-	_logger.addLogger(&_fileLogger);
+	_logger.addLogger(&ConsoleLogger::instance());
 }
 
 EventLoop::~EventLoop(void)
@@ -66,7 +62,11 @@ int	EventLoop::run(void)
 			addServer(newServer);
 		}
 	}
-	catch (const std::exception& e) { std::cerr << e.what() << std::endl; return 1; }
+	catch (const std::exception& e)
+	{
+		LOG_ERROR(_logger, e.what());
+		return 1;
+	}
 
 	while (true)
 	{

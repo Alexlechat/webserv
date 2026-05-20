@@ -6,6 +6,12 @@
 class	ConsoleLogger : public Logger
 {
 	public:
+		static ConsoleLogger& instance(void)
+		{
+			static ConsoleLogger inst(true);
+			return inst;
+		}
+
 		explicit ConsoleLogger(bool useColor = true);
 		virtual ~ConsoleLogger(void) {}
 

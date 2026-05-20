@@ -1,3 +1,5 @@
+error_log test.log error;
+
 server {
     listen 8080;
     server_name localhost;

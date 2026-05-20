@@ -1,4 +1,5 @@
 #include "logger/Logger.hpp"
+#include "utils/Utils.hpp"
 
 #include <ctime>
 #include <iomanip>
@@ -11,16 +12,28 @@ static const std::string	YELLOW  = "\033[33m";
 static const std::string	RED     = "\033[31m";
 static const std::string	MAGENTA = "\033[35;1m";
 
+Logger::LogLevel		Logger::stringToLevel(std::string s)
+{
+	std::string upperString = Utils::strToLower(s);
+
+	if (upperString == "DEBUG") return DEBUG;
+	if (upperString == "INFO")  return INFO;
+	if (upperString == "WARN")  return WARN;
+	if (upperString == "ERR")   return ERR;
+	if (upperString == "CRIT")  return CRIT;
+	else						return UNKNOWN;
+}
+
 std::string	Logger::_levelToString(LogLevel level) const
 {
 	switch (level)
 	{
-		case DEBUG:	   return "DEBUG";
-		case INFO:     return "INFO";
-		case WARNING:  return "WARNING";
-		case ERROR:    return "ERROR";
-		case CRITICAL: return "CRITICAL";
-		default:	   return "UNKNOWN";
+		case DEBUG: return "DEBUG";
+		case INFO:  return "INFO";
+		case WARN:  return "WARNING";
+		case ERR:   return "ERROR";
+		case CRIT:  return "CRITICAL";
+		default:    return "UNKNOWN";
 	}
 }
 
@@ -28,12 +41,12 @@ std::string		Logger::_levelToColor(LogLevel level) const
 {
 	switch (level)
 	{
-		case DEBUG:	   return GREY;
-		case INFO:     return CYAN;
-		case WARNING:  return YELLOW;
-		case ERROR:    return RED;
-		case CRITICAL: return MAGENTA;
-		default:	   return RESET;
+		case DEBUG: return GREY;
+		case INFO:  return CYAN;
+		case WARN:  return YELLOW;
+		case ERR:	return RED;
+		case CRIT:	return MAGENTA;
+		default:	return RESET;
 	}
 }
 

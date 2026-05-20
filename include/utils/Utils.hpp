@@ -24,6 +24,7 @@ namespace Utils
 	}
 
 	std::string	strToLower(const std::string& s);
+	std::string	strToUpper(const std::string& s);
 	std::string	trim(const std::string& s, const char* pattern);
 };
 

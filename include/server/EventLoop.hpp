@@ -4,9 +4,7 @@
 # include "server/Server.hpp"
 # include "server/Client.hpp"
 
-# include "logger/FileLogger.hpp"
 # include "logger/MultiLogger.hpp"
-# include "logger/ConsoleLogger.hpp"
 
 # include <vector>
 # include <sys/poll.h>
@@ -21,8 +19,6 @@ class	EventLoop
 		void	addServer(Server* server);
 
 	private:
-		ConsoleLogger				_consoleLogger;
-		FileLogger					_fileLogger;
 		MultiLogger					_logger;
 
 		std::vector<struct pollfd>	_fds;

@@ -11,7 +11,7 @@ void	ConsoleLogger::log(const std::string& msg, LogLevel level, const char* file
 	if (!_shouldLog(level))
 		return ;
  
-	std::ostream&	out = (level >= WARNING) ? std::cerr : std::cout;
+	std::ostream&	out = (level >= WARN) ? std::cerr : std::cout;
 	std::string		formatted = _formatMessage(msg, level, file, line);
  
 	if (_useColor)

@@ -240,18 +240,18 @@ static std::string extractFilename(const std::string& disposition)
 	return disposition.substr(pos, end - pos);
 }
 
-std::string buildUploadResponse(const HttpRequest& req, const LocationConfig& loc)
+std::string buildUploadResponse(const HttpRequest& req, const LocationConfig& loc, const ServerConfig& config)
 {
 	std::string boundary = extractBoundary(req);
 	if (boundary.empty() || loc.upload_store.empty())
-		return buildErrorResponse(400, ServerConfig());
+		return buildErrorResponse(400, config);
 
 	std::string delim = "--" + boundary;
 	const std::string& body = req.body;
 
 	size_t pos = body.find(delim);
 	if (pos == std::string::npos)
-		return buildErrorResponse(400, ServerConfig());
+		return buildErrorResponse(400, config);
 
 	// Walk through each part
 	while (true)
@@ -285,7 +285,7 @@ std::string buildUploadResponse(const HttpRequest& req, const LocationConfig& lo
 		std::string filepath = loc.upload_store + "/" + filename;
 		std::ofstream out(filepath.c_str(), std::ios::binary);
 		if (!out.is_open())
-			return buildErrorResponse(500, ServerConfig());
+			return buildErrorResponse(500, config);
 		out.write(fileContent.c_str(), fileContent.size());
 		out.close();
 
@@ -363,7 +363,7 @@ std::string buildResponse(const HttpRequest& req, const ServerConfig& config)
 	if (req.method == "POST")
 	{
 		if (!loc->upload_store.empty())
-			return buildUploadResponse(req, *loc);
+			return buildUploadResponse(req, *loc, config);
 		// POST to CGI would be handled here later
 		return buildErrorResponse(405, config);
 	}

@@ -6,6 +6,7 @@
 # include <vector>
 # include <cstdlib>
 
+# include "config/FileLoggerConfig.hpp"
 # include "config/LocationConfig.hpp"
 
 struct	ServerConfig
@@ -15,8 +16,13 @@ struct	ServerConfig
 	size_t						client_max_body_size;
 	std::map<int, std::string>	error_pages;
 	std::vector<LocationConfig>	locations;
+	FileLoggerConfig					logConfig;
 
-	ServerConfig(void) : port(80), client_max_body_size(1048576) {}
+	ServerConfig(const ServerConfig& src) 
+		: port(src.port), server_name(src.server_name), client_max_body_size(src.client_max_body_size), 
+		  error_pages(src.error_pages), locations(src.locations), logConfig(src.logConfig) {}
+
+	ServerConfig(FileLoggerConfig globalLogConfig) : port(80), client_max_body_size(1048576), logConfig(globalLogConfig) {}
 
 	void	setPort(std::string new_port) { port = std::atoi(new_port.c_str()); }
 	void	setServerName(std::string new_server_name) { server_name = new_server_name; }

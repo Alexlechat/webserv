@@ -1,16 +1,17 @@
 #include "config/ConfigParser.hpp"
 #include "config/ServerConfig.hpp"
 #include "config/LocationConfig.hpp"
+#include "config/FileLoggerConfig.hpp"
 
 #include <cctype>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 
 static bool	_isSingleCharToken(char c);
 
-ConfigParser::ConfigParser(const std::string& configFilePath) : _pos(0)
+ConfigParser::ConfigParser(const std::string& configFilePath)
+	: _pos(0), _globalFileLoggerConfig(DEFAULT_ERROR_LOG_FILEPATH, DEFAULT_ERROR_LOG_MIN_LEVEL)
 {
 	std::string	fileContent = _getFileContent(configFilePath);
 
@@ -71,6 +72,12 @@ void	ConfigParser::_parse(void)
 			_consume();
 			_serversConfig.push_back(_parseServer());
 		}
+		else if (_current() == "error_log")
+		{
+			_consume();
+			_globalFileLoggerConfig.setErrorLogs(_consume(), _consume());
+			_expect(";");
+		}
 		else
 			throw ParseException("Expected server directive, got: " +_current());
 	}
@@ -82,7 +89,7 @@ void	ConfigParser::_parse(void)
 ServerConfig	ConfigParser::_parseServer(void)
 {
 	_expect("{");
-	ServerConfig	serverConfig;
+	ServerConfig	serverConfig(_globalFileLoggerConfig);
 
 	while (_current() != "}")
 	{
@@ -93,6 +100,7 @@ ServerConfig	ConfigParser::_parseServer(void)
 		else if (key == "client_max_body_size") { serverConfig.setClientMaxBodySize(_consume()); _expect(";"); }
 		else if (key == "error_page") { serverConfig.setErrorPages(_consume(), _consume()); _expect(";"); }
 		else if (key == "location") { serverConfig.setLocations(_parseLocation(_consume())); }
+		else if (key == "error_log") { serverConfig.logConfig.setErrorLogs(_consume(), _consume()); _expect(";"); }
 		else throw ParseException("Unexpected server directive: " + key);
 
 	}

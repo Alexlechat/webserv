@@ -9,6 +9,15 @@ std::string	Utils::strToLower(const std::string& s)
 	return out;
 }
 
+std::string	Utils::strToUpper(const std::string& s)
+{
+	std::string	out = s;
+	for (size_t	i = 0; i < out.size(); ++i)
+		out[i] = std::toupper((unsigned char)out[i]);
+
+	return out;
+}
+
 std::string	Utils::trim(const std::string& s, const char* pattern)
 {
 	size_t	start = s.find_first_not_of(pattern);
