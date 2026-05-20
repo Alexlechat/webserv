@@ -46,7 +46,8 @@ SRCS					:=				$(DIR_SRCS)/main.cpp \
 										$(DIR_SRCS)/logger/Logger.cpp \
 										$(DIR_SRCS)/logger/ConsoleLogger.cpp \
 										$(DIR_SRCS)/logger/FileLogger.cpp \
-										$(DIR_SRCS)/logger/MultiLogger.cpp 
+										$(DIR_SRCS)/logger/MultiLogger.cpp \
+										$(DIR_SRCS)/utils/Utils.cpp 
 
 
 INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
