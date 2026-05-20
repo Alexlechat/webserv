@@ -4,10 +4,6 @@
 # include "config/ServerConfig.hpp"
 # include "socket/SocketServer.hpp"
 
-# include <string>
-# include <exception>
-# include <netinet/in.h>
-
 # define LISTEN_MAX 100
 
 class	Server : public SocketServer

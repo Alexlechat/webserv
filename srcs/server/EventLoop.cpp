@@ -1,17 +1,19 @@
 #include "config/ConfigParser.hpp"
 #include "server/EventLoop.hpp"
+#include "logger/Logger.hpp"
+#include "server/Client.hpp"
 #include "server/Server.hpp"
 
+#include "logger/FileLogger.hpp"
+#include "logger/MultiLogger.hpp"
+#include "logger/ConsoleLogger.hpp"
+#include "utils/Utils.hpp"
+
 #include <fcntl.h>
+#include <sys/poll.h>
 #include <unistd.h>
 #include <iostream>
 #include <exception>
-
-static void	set_nonblocking(int fd)
-{
-	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
-		std::cerr << "fcntl(): failure on fd=" << fd << "\n";
-}
 
 static struct pollfd	make_pollfd(int fd, short	events)
 {
@@ -24,7 +26,11 @@ static struct pollfd	make_pollfd(int fd, short	events)
 	return pfd;
 }
 
-EventLoop::EventLoop(void) {}
+EventLoop::EventLoop(void) : _consoleLogger(true), _fileLogger("webserv.log", false), _logger()
+{
+	_logger.addLogger(&_consoleLogger);
+	_logger.addLogger(&_fileLogger);
+}
 
 EventLoop::~EventLoop(void)
 {
@@ -40,8 +46,8 @@ EventLoop::~EventLoop(void)
 
 void	EventLoop::addServer(Server* server)
 {
-	set_nonblocking(server->getSocketFD());
-	_fds.push_back(make_pollfd(server->getSocketFD(), POLLIN));
+	server->setNonBlocking();
+	_fds.push_back(make_pollfd(server->getSocketFd(), POLLIN));
 	_servers.push_back(server);
 	_clients.push_back(NULL);
 }
@@ -56,7 +62,7 @@ int	EventLoop::run(void)
 		for (It = configParser.getServerConfigs().begin(); It != configParser.getServerConfigs().end(); It++)
 		{
 			Server*	newServer = new Server(*It);
-			std::cout << "New Server added : " << It->server_name << ":" << It->port << std::endl;
+			LOG_FD_INFO(_logger, newServer, "New Server added on port " + Utils::toString(It->port));
 			addServer(newServer);
 		}
 	}
@@ -67,7 +73,7 @@ int	EventLoop::run(void)
 		int	ready = poll(_fds.data(), (nfds_t)_fds.size(), -1);
 		if (ready < 0)
 		{
-			std::cerr << "poll(): failure" << std::endl;
+			LOG_ERROR(_logger, "poll() failure");
 			break ;
 		}
 
@@ -77,7 +83,7 @@ int	EventLoop::run(void)
 				continue ;
 			if (_isServerFd(_fds[i].fd))
 			{
-				_acceptNewClient(_fds[i].fd);
+				_acceptNewClient(_getServerByFd(_fds[i].fd));
 				continue ;
 			}
 			
@@ -94,49 +100,51 @@ int	EventLoop::run(void)
 bool	EventLoop::_isServerFd(int fd) const
 {
 	for (size_t i = 0; i < _servers.size(); ++i)
-		if (_servers[i]->getSocketFD() == fd) return true;
+		if (_servers[i]->getSocketFd() == fd) return true;
 
 	return false;
 }
 
 Server*	EventLoop::_getServerByFd(int fd) const
 {
-	for (size_t i = 0; i < _servers.size(); ++i)
-		if (_servers[i]->getSocketFD() == fd) return _servers[i];
+	for (size_t i = 0; i < _servers.size(); ++i) 
+		if (_servers[i]->getSocketFd() == fd) return _servers[i];
 
 	return NULL;
 }
 
-void	EventLoop::_acceptNewClient(int server_fd)
+void	EventLoop::_acceptNewClient(Server* server)
 {
 	struct sockaddr_in	addr;
 	socklen_t			len = sizeof(addr);
-	int client_fd = accept(server_fd, (struct sockaddr*)&addr, &len);
+	int client_fd = accept(server->getSocketFd(), (struct sockaddr*)&addr, &len);
 
 	if (client_fd < 0)
 	{
-		std::cerr << "accept(): failure\n";
+		LOG_FD_ERROR(_logger, server, "accept() failure");
 		return;
 	}
 
-	set_nonblocking(client_fd);
+	Client*	new_client = new Client(client_fd, server->getServerConfig());
 
+	new_client->setNonBlocking();
 	_fds.push_back(make_pollfd(client_fd, POLLIN));
-	_clients.push_back(new Client(client_fd, _getServerByFd(server_fd)->getServerConfig()));
- 
-	std::cout << "New client fd=" << client_fd << "\n";
+	_clients.push_back(new_client);
+
+	LOG_FD_INFO(_logger, new_client, "New client accepted");
 }
 
 void	EventLoop::_handleRead(int i)
 {
 	Client&	client = *_clients[i];
 	char	buf[4096];
+
+	LOG_FD_INFO(_logger, _clients[i], "Reading data from client...");
 	ssize_t	n = recv(_fds[i].fd, buf, sizeof(buf) - 1, 0);
 
 	if (n <= 0)
 	{
-		// n == 0 → client closed connection cleanly
-		// n < 0  → recv error
+		LOG_FD_WARNING(_logger, _clients[i], "No data received, closing connection");
 		_removeClient(i);
 		return;
 	}
@@ -145,7 +153,10 @@ void	EventLoop::_handleRead(int i)
 	client.getRecvBuf() += buf;
  
 	if (client.tryBuildResponse())
+	{
+		LOG_FD_INFO(_logger, _clients[i], "All data received");
 		_fds[i].events = POLLOUT;
+	}
 }
 
 void	EventLoop::_handleWrite(int i)
@@ -153,19 +164,21 @@ void	EventLoop::_handleWrite(int i)
 	Client&		client = *_clients[i];
 	std::string&	buf = client.getSendBuf();
 
+	LOG_FD_INFO(_logger, _clients[i], "Sending data to client...");
 	ssize_t n = send(_fds[i].fd, buf.c_str(), buf.size(), 0);
  
 	if (n > 0) buf.erase(0, n);
  
 	if (buf.empty() || n <= 0)
 	{
-		std::cout << "Response sent, closing fd=" << _fds[i].fd << "\n";
+		LOG_FD_INFO(_logger, _clients[i], "All data sended");
 		_removeClient(i);
 	}
 }
 
 void	EventLoop::_removeClient(int i)
 {
+	LOG_FD_INFO(_logger, _clients[i], "Closing connection");
 	close(_fds[i].fd);
 	delete _clients[i];
 	_fds.erase(_fds.begin() + i);

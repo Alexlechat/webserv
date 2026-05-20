@@ -1,8 +1,12 @@
 #ifndef EventLoop_HPP
 # define EventLoop_HPP
 
-# include "Server.hpp"
-# include "Client.hpp"
+# include "server/Server.hpp"
+# include "server/Client.hpp"
+
+# include "logger/FileLogger.hpp"
+# include "logger/MultiLogger.hpp"
+# include "logger/ConsoleLogger.hpp"
 
 # include <vector>
 # include <sys/poll.h>
@@ -17,6 +21,10 @@ class	EventLoop
 		void	addServer(Server* server);
 
 	private:
+		ConsoleLogger				_consoleLogger;
+		FileLogger					_fileLogger;
+		MultiLogger					_logger;
+
 		std::vector<struct pollfd>	_fds;
 		std::vector<Server*>		_servers;
 		std::vector<Client*>		_clients;
@@ -24,7 +32,7 @@ class	EventLoop
 		bool	_isServerFd(int fd) const;
 		Server*	_getServerByFd(int fd) const;
 
-		void	_acceptNewClient(int server_fd);
+		void	_acceptNewClient(Server* server);
 		void	_handleRead(int i);
 		void	_handleWrite(int i);
 		void	_removeClient(int i);

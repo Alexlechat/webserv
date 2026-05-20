@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <unistd.h> 
 #include <stdexcept>
 #include <sys/socket.h>
@@ -17,6 +18,10 @@ Socket::~Socket(void)
         close(_fd);
 }
 
-Socket::Socket(int fd) : _fd(fd) {}
+int Socket::getSocketFd(void) const { return (_fd); }
 
-int Socket::getSocketFD() const { return (_fd); }
+void	Socket::setNonBlocking(void) const
+{
+	if (fcntl(_fd, F_SETFL, O_NONBLOCK) == -1)
+		throw std::runtime_error("fcntl() failed");
+}

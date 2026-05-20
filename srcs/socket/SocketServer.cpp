@@ -7,7 +7,7 @@
 SocketServer::SocketServer(int port)
 {
     int	opt = 1;
-	setsockopt(getSocketFD(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	setsockopt(getSocketFd(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     std::memset(&_address, 0, sizeof(_address));
     _address.sin_family = AF_INET;
@@ -24,19 +24,20 @@ struct sockaddr_in  SocketServer::getAddress()
 
 void SocketServer::bindSocket()
 {
-    if (bind(getSocketFD(), (struct sockaddr*)&_address, sizeof(_address)) < 0)
+    if (bind(getSocketFd(), (struct sockaddr*)&_address, sizeof(_address)) < 0)
         throw std::runtime_error("bind() failed");
 }
 
 void    SocketServer::listenSocket(int maxConnections)
 {
-    if (listen(getSocketFD(), maxConnections) < 0)
+    if (listen(getSocketFd(), maxConnections) < 0)
         throw std::runtime_error("listen() failed");
 }
 
 int    SocketServer::acceptClient()
 {
-    int client_fd = accept(getSocketFD(), NULL, NULL);
+    int client_fd = accept(getSocketFd(), NULL, NULL);
+
     if (client_fd < 0)
         throw std::runtime_error("accept() failed");
     std::cout << "client connected" << std::endl;

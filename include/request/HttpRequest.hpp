@@ -1,8 +1,12 @@
 #ifndef HttpRequest_HPP
 # define HttpRequest_HPP
 
-# include <string>
 # include <map>
+# include <string>
+
+# define SPACE_CHARS " \t\r\n"
+# define END_OF_LINE "\r\n"
+# define END_OF_HEADER "\r\n\r\n"
 
 struct	HttpRequest
 {
@@ -14,8 +18,10 @@ struct	HttpRequest
 	bool								complete;
 
 	HttpRequest(void) : complete(false) {};
+
+	std::string	requestLineToStr(void) const;
 };
 
-bool	parseRequest(const std::string& raw, HttpRequest& req);
+bool		parseRequest(const std::string& raw, HttpRequest& req);
 
 #endif  // HttpRequest_HPP
