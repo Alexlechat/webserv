@@ -1,8 +1,12 @@
 #ifndef HttpRequest_HPP
 # define HttpRequest_HPP
 
-# include <string>
 # include <map>
+# include <string>
+
+# define SPACE_CHARS " \t\r\n"
+# define END_OF_LINE "\r\n"
+# define END_OF_HEADER "\r\n\r\n"
 
 struct	HttpRequest
 {

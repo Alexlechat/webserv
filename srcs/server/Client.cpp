@@ -1,6 +1,5 @@
 #include "server/Client.hpp"
 #include "request/Response.hpp"
-#include "request/HttpRequest.hpp"
 
 Client::Client(int fd, const ServerConfig& serverConfig)
 	: SocketClient(fd), _serverConfig(serverConfig) {}

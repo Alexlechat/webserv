@@ -1,6 +1,7 @@
 #ifndef Utils_HPP
 # define Utils_HPP
 
+# include <string>
 # include <sstream>
 
 namespace Utils
@@ -21,6 +22,9 @@ namespace Utils
 
 		return "[" + fd + "]";
 	}
-}
+
+	std::string	strToLower(const std::string& s);
+	std::string	trim(const std::string& s, const char* pattern);
+};
 
 #endif  // Utils_HPP

@@ -2,7 +2,6 @@
 # define Logger_HPP
 
 # include <string>
-# include "utils/Utils.hpp"
 
 class	Logger
 {
@@ -22,8 +21,6 @@ class	Logger
 
 		void			setMinLevel(LogLevel level);
 		LogLevel		getMinLevel(void) const;
-
-		std::string		intToString(int n);
 
 	protected:
 		Logger(void) : _minLevel(DEBUG) {}

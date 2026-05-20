@@ -2,6 +2,7 @@
 # define FileLogger_HPP
 
 # include "logger/Logger.hpp"
+
 # include <fstream>
 
 class	FileLogger : public Logger

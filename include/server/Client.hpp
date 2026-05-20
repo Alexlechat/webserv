@@ -1,9 +1,9 @@
 #ifndef Client_HPP
 # define Client_HPP
 
+# include "socket/SocketClient.hpp"
 # include "config/ServerConfig.hpp"
 # include "request/HttpRequest.hpp"
-# include "socket/SocketClient.hpp"
 
 
 class	Client : public SocketClient

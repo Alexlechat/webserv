@@ -1,7 +1,7 @@
 #ifndef ConsoleLogger_HPP
 # define ConsoleLogger_HPP
 
-# include <logger/Logger.hpp>
+# include "logger/Logger.hpp"
 
 class	ConsoleLogger : public Logger
 {
