@@ -4,20 +4,20 @@
 #include <string>
 #include <sys/socket.h>
 
-#include "Socket.hpp"
+#include "socket/Socket.hpp"
 
 class SocketClient : public Socket
 {
     protected:
-		std::string			_recv_buf;
-		std::string			_send_buf;
+		std::string		_recv_buf;
+		std::string		_send_buf;
 
     public:
         SocketClient(int fd);
-        ~SocketClient();
+        ~SocketClient(void);
 
-        std::string& getRecvBuf();
-        std::string& getSendBuf();
+        std::string&	getRecvBuf();
+        std::string&	getSendBuf();
 };
 
 #endif

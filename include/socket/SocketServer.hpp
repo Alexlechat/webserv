@@ -8,17 +8,17 @@
 class SocketServer : public Socket
 {
     private:
-        struct sockaddr_in  _address;
+        struct sockaddr_in	_address;
 
     public:
         SocketServer(int port);
-        ~SocketServer();
+        ~SocketServer(void);
 
         struct sockaddr_in  getAddress();
 
-        void    bindSocket();
+        void    bindSocket(void);
         void    listenSocket(int maxConnections);
-        int     acceptClient();
+        int     acceptClient(void);
 };
 
 #endif

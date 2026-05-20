@@ -8,8 +8,9 @@ class	Socket
 
     public:
         Socket(void);
-        Socket(int fd);
         ~Socket(void);
+
+		Socket(int fd) : _fd(fd) {}
 
         int		getSocketFd(void) const;
 		void	setNonBlocking(void) const;
