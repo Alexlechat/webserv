@@ -14,13 +14,13 @@ static const std::string	MAGENTA = "\033[35;1m";
 
 Logger::LogLevel		Logger::stringToLevel(std::string s)
 {
-	std::string upperString = Utils::strToLower(s);
+	std::string upperString = Utils::strToUpper(s);
 
 	if (upperString == "DEBUG") return DEBUG;
 	if (upperString == "INFO")  return INFO;
-	if (upperString == "WARN")  return WARN;
-	if (upperString == "ERR")   return ERR;
-	if (upperString == "CRIT")  return CRIT;
+	if (upperString == "WARN" || upperString == "WARNING")  return WARN;
+	if (upperString == "ERR" || upperString == "ERROR")   return ERR;
+	if (upperString == "CRIT" || upperString == "CRITICAL")  return CRIT;
 	else						return UNKNOWN;
 }
 
@@ -30,9 +30,9 @@ std::string	Logger::_levelToString(LogLevel level) const
 	{
 		case DEBUG: return "DEBUG";
 		case INFO:  return "INFO";
-		case WARN:  return "WARNING";
-		case ERR:   return "ERROR";
-		case CRIT:  return "CRITICAL";
+		case WARN:  return "WARN";
+		case ERR:   return "ERR";
+		case CRIT:  return "CRIT";
 		default:    return "UNKNOWN";
 	}
 }

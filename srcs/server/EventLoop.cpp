@@ -1,6 +1,7 @@
 #include "config/ConfigParser.hpp"
 #include "server/EventLoop.hpp"
 #include "logger/ConsoleLogger.hpp"
+#include "logger/FileLogger.hpp"
 #include "logger/Logger.hpp"
 #include "server/Client.hpp"
 #include "server/Server.hpp"
@@ -26,6 +27,7 @@ static struct pollfd	make_pollfd(int fd, short events)
 EventLoop::EventLoop(void) : _logger()
 {
 	_logger.addLogger(&ConsoleLogger::instance());
+	_logger.addLogger(&FileLogger::instance());
 }
 
 EventLoop::~EventLoop(void)

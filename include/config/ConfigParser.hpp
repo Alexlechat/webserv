@@ -5,12 +5,8 @@
 # include <vector>
 # include <exception>
 
-# include "config/FileLoggerConfig.hpp"
 # include "config/ServerConfig.hpp"
 # include "config/LocationConfig.hpp"
-
-# define DEFAULT_ERROR_LOG_MIN_LEVEL "error"
-# define DEFAULT_ERROR_LOG_FILEPATH "logs/error.log"
 
 class	ConfigParser
 {

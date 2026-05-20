@@ -9,6 +9,12 @@
 class	FileLogger : public Logger
 {
 	public:
+		static FileLogger& instance(void)
+		{
+			static FileLogger	inst(FileLoggerConfig(DEFAULT_ERROR_LOG_FILEPATH, DEFAULT_ERROR_LOG_MIN_LEVEL));
+			return inst;
+		}
+
 		explicit FileLogger(const FileLoggerConfig& fileLoggerConfig, bool truncate = true);
 		virtual ~FileLogger(void);
 

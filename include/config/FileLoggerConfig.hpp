@@ -6,6 +6,7 @@
 
 # include <string>
 
+# define DEFAULT_ERROR_LOG_MIN_LEVEL "error"
 # define DEFAULT_ERROR_LOG_FILEPATH "logs/error.log"
 
 struct FileLoggerConfig
@@ -25,7 +26,7 @@ struct FileLoggerConfig
 
 		if (log_min_lvl == Logger::UNKNOWN)
 		{
-			LOG_WARNING(ConsoleLogger::instance(), "Invalid Logger minimal level, defaulting to ERROR");
+			LOG_WARNING(ConsoleLogger::instance(), "Invalid FileLogger minimal level, defaulting to ERROR");
 			log_min_lvl = Logger::ERR;
 		}
 	}
