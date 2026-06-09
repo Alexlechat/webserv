@@ -127,6 +127,7 @@ void	EventLoop::_acceptNewClient(Server* server)
 
 	Client*	new_client = new Client(client_fd, server->getServerConfig(), server->getServerAccessLogger());
 
+	new_client->setSockAddr(addr);
 	new_client->setNonBlocking();
 	_fds.push_back(make_pollfd(client_fd, POLLIN));
 	_clients.push_back(new_client);
@@ -147,11 +148,7 @@ void	EventLoop::_handleRead(int i)
 	}
 
 	client.getRecvBuf().append(buf, n);
-	if (client.tryBuildResponse())
-	{
-		_fds[i].events = POLLOUT;
-		client.logAccess();
-	}
+	if (client.tryBuildResponse()) { _fds[i].events = POLLOUT; }
 }
 
 void	EventLoop::_handleWrite(int i)
@@ -165,6 +162,7 @@ void	EventLoop::_handleWrite(int i)
  
 	if (buf.empty() || n <= 0)
 	{
+		client.logAccess();
 		_removeClient(i);
 	}
 }

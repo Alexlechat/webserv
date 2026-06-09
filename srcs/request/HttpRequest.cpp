@@ -9,7 +9,7 @@ static bool	parseBody(const std::string& raw, HttpRequest& req, size_t headerEnd
 
 bool	parseRequest(const std::string& raw, HttpRequest& req)
 {
-	size_t headerEnd = raw.find(END_OF_HEADER);
+	size_t	headerEnd = raw.find(END_OF_HEADER);
 	if (headerEnd == std::string::npos)
 		return false;
 

@@ -17,6 +17,9 @@ class	Client : public SocketClient
 		void				logAccess(void) const;
 
 	private:
+		std::string			_ip;
+		std::string			_status;
+		std::string			_bytesBodySent;
 		HttpRequest			_request;
 		const FileLogger&	_accessLogger;
 		const ServerConfig&	_serverConfig;
