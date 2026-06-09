@@ -27,7 +27,7 @@ DIR_DEPS				:=				.deps
 
 
 #	FLAGS
-FLAGS					:=				-Wall -Wextra -Werror -I$(DIR_INCS) -g3
+FLAGS					:=				-Wall -Wextra -Werror -I$(DIR_INCS) -O3
 DEPFLAGS				:=				-MMD -MP
 CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
