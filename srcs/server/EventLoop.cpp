@@ -1,13 +1,12 @@
 #include "config/ConfigParser.hpp"
 #include "server/EventLoop.hpp"
 #include "logger/ConsoleLogger.hpp"
-#include "logger/FileLogger.hpp"
 #include "logger/Logger.hpp"
 #include "server/Client.hpp"
 #include "server/Server.hpp"
-
 #include "utils/Utils.hpp"
 
+#include <cstdlib>
 #include <fcntl.h>
 #include <unistd.h>
 #include <exception>
@@ -26,8 +25,28 @@ static struct pollfd	make_pollfd(int fd, short events)
 
 EventLoop::EventLoop(void) : _logger()
 {
-	_logger.addLogger(&ConsoleLogger::instance());
-	_logger.addLogger(&FileLogger::instance());
+	try
+	{
+		LOG_INFO(ConsoleLogger::instance(), "Importing Configuration file : www/config");
+		ConfigParser	configParser("./www/config");
+		LOG_INFO(ConsoleLogger::instance(), "Done Importing");
+
+		std::vector<ServerConfig>::const_iterator	It;
+		for (It = configParser.getServerConfigs().begin(); It != configParser.getServerConfigs().end(); It++)
+		{
+			Server*	newServer = new Server(*It);
+			_logger.addLogger(newServer->getServerErrorLogger());
+			addServer(newServer);
+			LOG_INFO(ConsoleLogger::instance(), "New Server added on port " + Utils::toString(It->port));
+		}
+	}
+	catch (const std::exception& e)
+	{
+		LOG_CRITICAL(ConsoleLogger::instance(), e.what());
+		exit(1);
+	}
+
+	_logger.addLogger(ConsoleLogger::instance());
 }
 
 EventLoop::~EventLoop(void)
@@ -52,41 +71,20 @@ void	EventLoop::addServer(Server* server)
 
 int	EventLoop::run(void)
 {
-	try
-	{
-		ConfigParser	configParser("./www/config");
-
-		std::vector<ServerConfig>::const_iterator	It;
-		for (It = configParser.getServerConfigs().begin(); It != configParser.getServerConfigs().end(); It++)
-		{
-			Server*	newServer = new Server(*It);
-			LOG_FD_INFO(_logger, newServer, "New Server added on port " + Utils::toString(It->port));
-			addServer(newServer);
-		}
-	}
-	catch (const std::exception& e)
-	{
-		LOG_ERROR(_logger, e.what());
-		return 1;
-	}
-
+	LOG_INFO(ConsoleLogger::instance(), "Starting poll loop");
 	while (true)
 	{
 		int	ready = poll(_fds.data(), (nfds_t)_fds.size(), -1);
-		if (ready < 0)
-		{
-			LOG_ERROR(_logger, "poll() failure");
-			break ;
-		}
+		if (ready < 0) { break; }
 
 		for (int i = (int)_fds.size() - 1; i >= 0; --i)
 		{
 			if (_fds[i].revents == 0)
-				continue ;
+				continue;
 			if (_isServerFd(_fds[i].fd))
 			{
 				_acceptNewClient(_getServerByFd(_fds[i].fd));
-				continue ;
+				continue;
 			}
 			
 			if (_fds[i].revents & POLLIN)
@@ -123,17 +121,15 @@ void	EventLoop::_acceptNewClient(Server* server)
 
 	if (client_fd < 0)
 	{
-		LOG_FD_ERROR(_logger, server, "accept() failure");
+		LOG_WARNING(server->getServerErrorLogger(), "accept() failure");
 		return;
 	}
 
-	Client*	new_client = new Client(client_fd, server->getServerConfig());
+	Client*	new_client = new Client(client_fd, server->getServerConfig(), server->getServerAccessLogger());
 
 	new_client->setNonBlocking();
 	_fds.push_back(make_pollfd(client_fd, POLLIN));
 	_clients.push_back(new_client);
-
-	LOG_FD_INFO(_logger, new_client, "New client accepted");
 }
 
 void	EventLoop::_handleRead(int i)
@@ -141,23 +137,20 @@ void	EventLoop::_handleRead(int i)
 	Client&	client = *_clients[i];
 	char	buf[4096];
 
-	LOG_FD_INFO(_logger, _clients[i], "Reading data from client...");
 	ssize_t	n = recv(_fds[i].fd, buf, sizeof(buf) - 1, 0);
+	buf[n] = '\0';
 
 	if (n <= 0)
 	{
-		LOG_FD_WARNING(_logger, _clients[i], "No data received, closing connection");
 		_removeClient(i);
 		return;
 	}
 
-	buf[n] = '\0';
 	client.getRecvBuf() += buf;
- 
 	if (client.tryBuildResponse())
 	{
-		LOG_FD_INFO(_logger, _clients[i], "All data received");
 		_fds[i].events = POLLOUT;
+		client.logAccess();
 	}
 }
 
@@ -166,21 +159,18 @@ void	EventLoop::_handleWrite(int i)
 	Client&		client = *_clients[i];
 	std::string&	buf = client.getSendBuf();
 
-	LOG_FD_INFO(_logger, _clients[i], "Sending data to client...");
 	ssize_t n = send(_fds[i].fd, buf.c_str(), buf.size(), 0);
  
 	if (n > 0) buf.erase(0, n);
  
 	if (buf.empty() || n <= 0)
 	{
-		LOG_FD_INFO(_logger, _clients[i], "All data sended");
 		_removeClient(i);
 	}
 }
 
 void	EventLoop::_removeClient(int i)
 {
-	LOG_FD_INFO(_logger, _clients[i], "Closing connection");
 	close(_fds[i].fd);
 	delete _clients[i];
 	_fds.erase(_fds.begin() + i);

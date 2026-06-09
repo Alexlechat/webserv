@@ -11,7 +11,7 @@ class SocketServer : public Socket
         struct sockaddr_in	_address;
 
     public:
-        SocketServer(int port);
+		SocketServer(uint16_t port);
         ~SocketServer(void);
 
         struct sockaddr_in  getAddress();

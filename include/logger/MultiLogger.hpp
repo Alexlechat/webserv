@@ -11,11 +11,12 @@ class	MultiLogger : public Logger
 		MultiLogger(void) : Logger() {}
 		virtual ~MultiLogger(void) {}
 
-		void			addLogger(Logger* logger);
-		virtual void	log(const std::string& msg, LogLevel level, const char* file, int line);
+		void			addLogger(const Logger& logger);
+		virtual void	log(const std::string& msg) const;
+		virtual void	logLevel(const std::string& msg, LogLevel level) const;
 
 	private:
-		std::vector<Logger*>	_loggers;
+		std::vector<const Logger*>	_loggers;
 };
 
 #endif  // MultiLogger_HPP

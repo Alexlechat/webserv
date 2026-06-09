@@ -1,11 +1,12 @@
 #include <cstring>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
 
 #include "socket/SocketServer.hpp"
 
-SocketServer::SocketServer(int port)
+SocketServer::SocketServer(uint16_t port)
 {
+
     int	opt = 1;
 	setsockopt(getSocketFd(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 

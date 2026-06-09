@@ -18,7 +18,8 @@ class	Logger
 
 		virtual ~Logger(void) {}
 
-		virtual void	log(const std::string& msg, LogLevel level, const char* file, int line) = 0;
+		virtual void		log(const std::string& msg) const = 0;
+		virtual void		logLevel(const std::string& msg, LogLevel level) const = 0;
 
 		void				setMinLevel(LogLevel level);
 		LogLevel			getMinLevel(void) const;
@@ -26,31 +27,27 @@ class	Logger
 
 	protected:
 		Logger(void) : _minLevel(DEBUG) {}
+		Logger(Logger::LogLevel minLevel) : _minLevel(minLevel) {}
 
 		bool			_shouldLog(LogLevel level) const;
 		std::string		_levelToColor(LogLevel level) const;
 		std::string		_levelToString(LogLevel level) const;
-		std::string		_formatMessage(const std::string& msg, LogLevel level, const char* file, int line) const;
+
+		std::string		_formatTime(void) const;
+		std::string		_formatMessage(const std::string& msg) const;
+		std::string		_formatLevelMessage(const std::string& msg, LogLevel level) const;
 
 	private:
 		LogLevel	_minLevel;
 };
 
-# define LOG(logger, level, message) (logger).log(message, level, __FILE__, __LINE__)
+# define LOG(logger, message) (logger).log(message)
+# define LOG_LVL(logger, level, message) (logger).logLevel(message, level)
 
-# define LOG_DEBUG(logger, message)		LOG(logger, Logger::DEBUG,    message)
-# define LOG_INFO(logger, message)		LOG(logger, Logger::INFO,     message)
-# define LOG_WARNING(logger, message)	LOG(logger, Logger::WARN,  message)
-# define LOG_ERROR(logger, message)		LOG(logger, Logger::ERR,    message)
-# define LOG_CRITICAL(logger, message)	LOG(logger, Logger::CRIT, message)
-
-# define LOG_FD(logger, level, socket, msg) \
-    LOG((logger), (level), Utils::fdInBrackets((socket)->getSocketFd()) + " " + (msg))
-
-# define LOG_FD_DEBUG(logger, socket, msg)    LOG_FD(logger, Logger::DEBUG,    socket, msg)
-# define LOG_FD_INFO(logger, socket, msg)     LOG_FD(logger, Logger::INFO,     socket, msg)
-# define LOG_FD_WARNING(logger, socket, msg)  LOG_FD(logger, Logger::WARN,  socket, msg)
-# define LOG_FD_ERROR(logger, socket, msg)    LOG_FD(logger, Logger::ERR,    socket, msg)
-# define LOG_FD_CRITICAL(logger, socket, msg) LOG_FD(logger, Logger::CRIT, socket, msg)
+# define LOG_DEBUG(logger, message)		LOG_LVL(logger, Logger::DEBUG,    message)
+# define LOG_INFO(logger, message)		LOG_LVL(logger, Logger::INFO,     message)
+# define LOG_WARNING(logger, message)	LOG_LVL(logger, Logger::WARN,  message)
+# define LOG_ERROR(logger, message)		LOG_LVL(logger, Logger::ERR,    message)
+# define LOG_CRITICAL(logger, message)	LOG_LVL(logger, Logger::CRIT, message)
 
 #endif  // Logger_HPP

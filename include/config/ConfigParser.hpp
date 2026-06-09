@@ -31,7 +31,8 @@ class	ConfigParser
 		size_t						_pos;
 
 		std::vector<ServerConfig>	_serversConfig;
-		FileLoggerConfig			_globalFileLoggerConfig;
+		FileLoggerConfig			_globalErrorFileLoggerConfig;
+		FileLoggerConfig			_globalAccessFileLoggerConfig;
 
 		void				_parse(void);
 		ServerConfig		_parseServer(void);

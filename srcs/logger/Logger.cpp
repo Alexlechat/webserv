@@ -50,13 +50,26 @@ std::string		Logger::_levelToColor(LogLevel level) const
 	}
 }
 
-std::string		Logger::_formatMessage(const std::string& msg, LogLevel level, const char* file, int line) const
+std::string		Logger::_formatLevelMessage(const std::string& msg, LogLevel level) const
+{
+	std::ostringstream	oss;
+
+	oss << _formatTime()
+		<< "[" << _levelToString(level) << "] "
+		<< msg;
+ 
+	return oss.str();
+}
+
+std::string	Logger::_formatTime(void) const
 {
 	std::time_t	t = std::time(NULL);
 	std::tm*	tm = std::localtime(&t);
  
 	std::ostringstream oss;
+
 	oss << "["
+
 		<< std::setfill('0')
 		<< (1900 + tm->tm_year) << "-"
 		<< std::setw(2) << (1 + tm->tm_mon) << "-"
@@ -64,11 +77,17 @@ std::string		Logger::_formatMessage(const std::string& msg, LogLevel level, cons
 		<< std::setw(2) << tm->tm_hour << ":"
 		<< std::setw(2) << tm->tm_min  << ":"
 		<< std::setw(2) << tm->tm_sec
-		<< "] "
-		<< "[" << _levelToString(level) << "] "
-		<< msg
-		<< "  (" << file << ":" << line << ")";
- 
+		<< "] ";
+
+	return oss.str();
+}
+
+std::string	Logger::_formatMessage(const std::string& msg) const
+{
+	std::ostringstream	oss;
+
+	oss << _formatTime() << msg;
+
 	return oss.str();
 }
 

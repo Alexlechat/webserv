@@ -9,21 +9,16 @@
 class	FileLogger : public Logger
 {
 	public:
-		static FileLogger& instance(void)
-		{
-			static FileLogger	inst(FileLoggerConfig(DEFAULT_ERROR_LOG_FILEPATH, DEFAULT_ERROR_LOG_MIN_LEVEL));
-			return inst;
-		}
-
-		explicit FileLogger(const FileLoggerConfig& fileLoggerConfig, bool truncate = true);
+		explicit FileLogger(const FileLoggerConfig& fileLoggerConfig, bool truncate = false);
 		virtual ~FileLogger(void);
 
-		virtual void	log(const std::string& msg, LogLevel level, const char* file, int line);
+		virtual void	log(const std::string& msg) const;
+		virtual void	logLevel(const std::string& msg, LogLevel level) const;
 
 		bool			isOpen(void) const;
 
 	private:
-		std::ofstream	_file;
+		mutable std::ofstream	_file;
 		
 		FileLogger(const FileLogger&);
 		FileLogger& operator=(const FileLogger&);

@@ -15,7 +15,8 @@ class	ConsoleLogger : public Logger
 		explicit ConsoleLogger(bool useColor = true);
 		virtual ~ConsoleLogger(void) {}
 
-		virtual void	log(const std::string& msg, LogLevel level, const char* file, int line);
+		virtual void	log(const std::string& msg) const;
+		virtual void	logLevel(const std::string& msg, LogLevel level) const;
 		void			setColor(bool enable) { _useColor = enable; }
 
 	private:

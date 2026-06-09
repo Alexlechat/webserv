@@ -125,7 +125,7 @@ bool isMethodAllowed(const LocationConfig& loc, const std::string& method)
 std::string buildErrorResponse(int code, const ServerConfig& config)
 {
 	// Look for a custom error page in config
-	std::map<int, std::string>::const_iterator it = config.error_pages.find(code);
+	std::map<unsigned short, std::string>::const_iterator it = config.error_pages.find(code);
 	if (it != config.error_pages.end() && !config.locations.empty())
 	{
 		// Error page paths are relative to the first location's root
