@@ -1,4 +1,4 @@
-error_log test.log error;
+access_log	logs/access.log;
 
 server {
     listen 8080;
