@@ -135,7 +135,7 @@ void	EventLoop::_acceptNewClient(Server* server)
 void	EventLoop::_handleRead(int i)
 {
 	Client&	client = *_clients[i];
-	char	buf[4096];
+	char	buf[65536];
 
 	ssize_t	n = recv(_fds[i].fd, buf, sizeof(buf) - 1, 0);
 	buf[n] = '\0';
@@ -146,7 +146,7 @@ void	EventLoop::_handleRead(int i)
 		return;
 	}
 
-	client.getRecvBuf() += buf;
+	client.getRecvBuf().append(buf, n);
 	if (client.tryBuildResponse())
 	{
 		_fds[i].events = POLLOUT;
