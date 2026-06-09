@@ -129,4 +129,15 @@ fclean:			clean
 #	REBUILD RULE
 .PHONY:			re
 re:				fclean	all
+				
 
+#	DEBUG RULE
+.PHONY:			debug
+debug:
+										$(MAKE) re FLAGS="$(FLAGS) -g3"
+
+
+#	RUN RULE
+.PHONY:			run
+run:			all
+										./$(NAME)
