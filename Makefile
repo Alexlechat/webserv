@@ -43,6 +43,7 @@ SRCS					:=				$(DIR_SRCS)/main.cpp \
 										$(DIR_SRCS)/socket/SocketServer.cpp \
 										$(DIR_SRCS)/http/HttpRequest.cpp \
 										$(DIR_SRCS)/http/HttpResponse.cpp \
+										$(DIR_SRCS)/http/HttpResponseBuilder.cpp \
 										$(DIR_SRCS)/logger/Logger.cpp \
 										$(DIR_SRCS)/logger/ConsoleLogger.cpp \
 										$(DIR_SRCS)/logger/FileLogger.cpp \
@@ -59,6 +60,7 @@ INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
 										$(DIR_INCS)/socket/SocketServer.hpp \
 										$(DIR_INCS)/http/HttpRequest.hpp \
 										$(DIR_INCS)/http/HttpResponse.hpp \
+										$(DIR_INCS)/http/HttpResponseBuilder.hpp \
 										$(DIR_INCS)/logger/Logger.hpp \
 										$(DIR_INCS)/logger/ConsoleLogger.hpp \
 										$(DIR_INCS)/logger/FileLogger.hpp \

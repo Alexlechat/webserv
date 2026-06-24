@@ -1,27 +1,26 @@
-#ifndef RESPONSE_HPP
-# define RESPONSE_HPP
+#ifndef HttpResponse_HPP
+# define HttpResponse_HPP
 
-# include <string>
-# include "config/ServerConfig.hpp"
-# include "http/HttpRequest.hpp"
+# include "http/Http.hpp"
+# include <map>
 
-// ─── Entry point ──────────────────────────────────────────────────────────────
-// Call this once the request is fully parsed.
-// Returns a complete HTTP response string ready to be sent to the client.
-std::string buildResponse(const HttpRequest& req, const ServerConfig& config);
+class	HttpResponse
+{
+	public:
+		explicit HttpResponse(Http::StatusCode code = Http::OK);
 
-// ─── Individual builders ──────────────────────────────────────────────────────
-std::string buildErrorResponse(int code, const ServerConfig& config);
-std::string buildRedirectResponse(int code, const std::string& location);
-std::string buildStaticResponse(const std::string& filepath);
-std::string buildAutoindexResponse(const std::string& dirPath,
-                                    const std::string& urlPath);
-std::string buildUploadResponse(const HttpRequest& req, const LocationConfig& loc, const ServerConfig& config);
-std::string buildDeleteResponse(const std::string& filepath);
+		void	setStatus(Http::StatusCode code);
+		void	setHeader(const std::string& key, const std::string& value);
+		void	setBody(const std::string& body, const std::string& contentType = "text/html");
+		void	clearBody(void);
+		
+		Http::StatusCode	status(void) const;
+		std::string			toString(void) const;
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
-std::string getMimeType(const std::string& filepath);
-std::string resolveFilepath(const LocationConfig& loc, const std::string& url);
-bool        isMethodAllowed(const LocationConfig& loc, const std::string& method);
+	private:
+		Http::StatusCode					_status;
+		std::map<std::string, std::string>	_headers;
+		std::string							_body;
+};
 
-#endif // RESPONSE_HPP
+#endif  // HttpResponse_HPP

@@ -52,7 +52,7 @@ std::map<std::string, ConfigParser::LocationHandler>	ConfigParser::_makeLocation
 	m_loc["index"]			= &ConfigParser::_handleIndex;
 	m_loc["methods"]		= &ConfigParser::_handleMethods;
 	m_loc["autoindex"]		= &ConfigParser::_handleAutoindex;
-	m_loc["upload_store"]	= &ConfigParser::_handleAutoindex;
+	m_loc["upload_store"]	= &ConfigParser::_handleUploadStore;
 	m_loc["redirect"]		= &ConfigParser::_handleRedirect;
 	m_loc["cgi_extension"]	= &ConfigParser::_handleCgiExtension;
 
@@ -95,7 +95,7 @@ void	ConfigParser::_handleRedirect(ConfigParser& p, LocationConfig& cfg)
 	const std::string&	code = p._consume();
 	const std::string&	url = p._consume();
 
-	cfg.setRedirect(code, url);
+	cfg.setRedirects(code, url);
 	p._expect(";");
 }
 

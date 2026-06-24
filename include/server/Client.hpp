@@ -1,6 +1,7 @@
 #ifndef Client_HPP
 # define Client_HPP
 
+# include "http/HttpResponse.hpp"
 # include "logger/FileLogger.hpp"
 # include "socket/SocketClient.hpp"
 # include "config/ServerConfig.hpp"
@@ -18,9 +19,10 @@ class	Client : public SocketClient
 
 	private:
 		std::string			_ip;
-		std::string			_status;
 		std::string			_bytesBodySent;
+		Http::StatusCode	_status;
 		HttpRequest			_request;
+		HttpResponse		_response;
 		const FileLogger&	_accessLogger;
 		const ServerConfig&	_serverConfig;
 

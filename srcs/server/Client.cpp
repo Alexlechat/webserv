@@ -1,8 +1,7 @@
 #include "server/Client.hpp"
 #include "logger/Logger.hpp"
 #include "http/Http.hpp"
-#include "http/HttpResponse.hpp"
-#include "utils/Utils.hpp"
+#include "http/HttpResponseBuilder.hpp"
 
 #include <cstdlib>
 #include <sstream>
@@ -33,17 +32,13 @@ bool	Client::feed(const char *buf, size_t n)
 
 void	Client::_onRequestComplete(void)
 {
+	_response = buildResponse(_request, _serverConfig);
+	_send_buf = _response.toString();
+
 	_ip = inet_ntoa(getSockAddr().sin_addr);
-	_send_buf = buildResponse(_request, _serverConfig);
+	_status = _response.status();
 
-	if (_send_buf.size() > 12)
-		_status = _send_buf.substr(9, 3);
-
-	size_t	cl_pos = _send_buf.find("Content-length:");
-
-	LOG_DEBUG(ConsoleLogger::instance(), _send_buf);
-	LOG_DEBUG(ConsoleLogger::instance(), Utils::toString(cl_pos));
-
+	size_t	cl_pos = _send_buf.find("Content-Length");
 	if (cl_pos != std::string::npos)
 	{
 		size_t	start = cl_pos + 16;
@@ -54,11 +49,10 @@ void	Client::_onRequestComplete(void)
 
 void	Client::_onParseError(Http::StatusCode code)
 {
-	(void)code;
 	_ip = inet_ntoa(getSockAddr().sin_addr);
-	// HttpResponse	resp(code);
-	// _send_buf = resp.toString();
-	_status = "400";
+	HttpResponse	resp(code);
+	_send_buf = resp.toString();
+	_status = Http::BAD_REQUEST;
 }
 
 void	Client::logAccess(void) const
@@ -70,7 +64,7 @@ void	Client::logAccess(void) const
     oss << _ip << " - - "
         << "\"" << _request.method << " " << _request.path
         << " " << _request.version << "\" "
-        << _status << " "
+        << (int)_status << " "
         << (_bytesBodySent.empty() ? "0" : _bytesBodySent) << " \"-\" "
         << (ua != _request.headers.end() ? ua->second : "-");;
 	LOG(_accessLogger, oss.str());

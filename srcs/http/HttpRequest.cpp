@@ -1,7 +1,6 @@
 #include "http/Http.hpp"
 #include "http/HttpRequest.hpp"
 #include "utils/Utils.hpp"
-#include <complex>
 #include <cstdlib>
 #include <sstream>
 
@@ -97,7 +96,7 @@ HttpRequest::ParseState	HttpRequest::_tryParseHeaders(void)
 		return PARSING_BODY;
 	}
 
-	std::map<std::string, std::string>::const_iterator	cl =  headers.find("content-lenght");
+	std::map<std::string, std::string>::const_iterator	cl =  headers.find("content-length");
 	if (cl != headers.end())
 	{
 		_contentLenght = static_cast<size_t>(std::strtol(cl->second.c_str(), NULL, 10));
