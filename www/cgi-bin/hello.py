@@ -29,13 +29,13 @@ print("""<!DOCTYPE html>
         .container {{ max-width: 640px; margin: 0 auto; }}
         h1 {{ color: #68d391; }}
         .badge {{ display:inline-block; background:#1a202c; border:1px solid #276749;
-                  border-radius:6px; padding:2px 10px; font-size:0.75rem; color:#68d391; margin-bottom:20px; }}
+                    border-radius:6px; padding:2px 10px; font-size:0.75rem; color:#68d391; margin-bottom:20px; }}
         table {{ width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:20px; }}
         th {{ text-align:left; color:#718096; padding:6px 12px; border-bottom:1px solid #2d3748; }}
         td {{ padding:8px 12px; border-bottom:1px solid #1a202c; font-family:monospace; }}
         .key {{ color:#90cdf4; }} .val {{ color:#fbb6ce; }}
         a {{ display:inline-block; margin-top:24px; color:#63b3ed; text-decoration:none;
-             border:1px solid #2b4c7e; padding:6px 16px; border-radius:6px; }}
+                border:1px solid #2b4c7e; padding:6px 16px; border-radius:6px; }}
     </style>
 </head>
 <body>

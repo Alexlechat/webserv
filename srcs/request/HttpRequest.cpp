@@ -32,6 +32,13 @@ static bool	parseHeader(const std::string& raw, HttpRequest& req, size_t headerE
 	if (req.method.empty() || req.path.empty())
 		return false;
 
+	size_t q = req.path.find('?');
+    if (q != std::string::npos)
+    {
+        req.query_string = req.path.substr(q + 1);
+        req.path         = req.path.substr(0, q);
+    }
+
 	size_t	pos = firstLine + 2;
 	while (pos < headerSection.size())
 	{
