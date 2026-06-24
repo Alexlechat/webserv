@@ -4,7 +4,7 @@
 # include "logger/FileLogger.hpp"
 # include "socket/SocketClient.hpp"
 # include "config/ServerConfig.hpp"
-# include "request/HttpRequest.hpp"
+# include "http/HttpRequest.hpp"
 
 
 class	Client : public SocketClient
@@ -13,7 +13,7 @@ class	Client : public SocketClient
 		Client(int fd, const ServerConfig& serverConfig, const FileLogger& accessLogger);
 		~Client(void);
 
-		bool				tryBuildResponse(void);
+		bool				feed(const char* buf, size_t n);
 		void				logAccess(void) const;
 
 	private:
@@ -23,6 +23,9 @@ class	Client : public SocketClient
 		HttpRequest			_request;
 		const FileLogger&	_accessLogger;
 		const ServerConfig&	_serverConfig;
+
+		void	_onRequestComplete(void);
+		void	_onParseError(Http::StatusCode code);
 };
 
 #endif

@@ -27,9 +27,7 @@ EventLoop::EventLoop(void) : _logger()
 {
 	try
 	{
-		LOG_INFO(ConsoleLogger::instance(), "Importing configuration file : www/config");
 		ConfigParser	configParser("./www/config");
-		LOG_INFO(ConsoleLogger::instance(), "Done importing");
 
 		std::vector<ServerConfig>::const_iterator	It;
 		for (It = configParser.getServerConfigs().begin(); It != configParser.getServerConfigs().end(); It++)
@@ -137,9 +135,7 @@ void	EventLoop::_handleRead(int i)
 {
 	Client&	client = *_clients[i];
 	char	buf[65536];
-
 	ssize_t	n = recv(_fds[i].fd, buf, sizeof(buf) - 1, 0);
-	buf[n] = '\0';
 
 	if (n <= 0)
 	{
@@ -147,8 +143,8 @@ void	EventLoop::_handleRead(int i)
 		return;
 	}
 
-	client.getRecvBuf().append(buf, n);
-	if (client.tryBuildResponse()) { _fds[i].events = POLLOUT; }
+	if (client.feed(buf, (size_t)n))
+		_fds[i].events = POLLOUT;
 }
 
 void	EventLoop::_handleWrite(int i)

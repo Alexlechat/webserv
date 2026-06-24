@@ -3,7 +3,7 @@
 
 # include <string>
 # include "config/ServerConfig.hpp"
-# include "request/HttpRequest.hpp"
+# include "http/HttpRequest.hpp"
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 // Call this once the request is fully parsed.
