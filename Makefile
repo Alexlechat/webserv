@@ -27,7 +27,7 @@ DIR_DEPS				:=				.deps
 
 
 #	FLAGS
-FLAGS					:=				-Wall -Wextra -Werror -I$(DIR_INCS) -O3
+FLAGS					:=				-Wall -Wextra -Werror -I$(DIR_INCS)
 DEPFLAGS				:=				-MMD -MP
 CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
@@ -139,5 +139,5 @@ debug:
 
 #	RUN RULE
 .PHONY:			run
-run:			all
+run:									$(MAKE) all FLAGS="$(FLAGS) -O3"
 										./$(NAME)

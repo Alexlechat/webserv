@@ -54,8 +54,8 @@ std::string		Logger::_formatLevelMessage(const std::string& msg, LogLevel level)
 {
 	std::ostringstream	oss;
 
-	oss << _formatTime()
-		<< "[" << _levelToString(level) << "] "
+	oss << "[" << _levelToString(level) << "] "
+		<< _formatTime()
 		<< msg;
  
 	return oss.str();

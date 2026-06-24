@@ -27,9 +27,9 @@ EventLoop::EventLoop(void) : _logger()
 {
 	try
 	{
-		LOG_INFO(ConsoleLogger::instance(), "Importing Configuration file : www/config");
+		LOG_INFO(ConsoleLogger::instance(), "Importing configuration file : www/config");
 		ConfigParser	configParser("./www/config");
-		LOG_INFO(ConsoleLogger::instance(), "Done Importing");
+		LOG_INFO(ConsoleLogger::instance(), "Done importing");
 
 		std::vector<ServerConfig>::const_iterator	It;
 		for (It = configParser.getServerConfigs().begin(); It != configParser.getServerConfigs().end(); It++)
@@ -37,7 +37,7 @@ EventLoop::EventLoop(void) : _logger()
 			Server*	newServer = new Server(*It);
 			_logger.addLogger(newServer->getServerErrorLogger());
 			addServer(newServer);
-			LOG_INFO(ConsoleLogger::instance(), "New Server added on port " + Utils::toString(It->port));
+			LOG_INFO(ConsoleLogger::instance(), "Server listening on 0.0.0.0:" + Utils::toString(It->port));
 		}
 	}
 	catch (const std::exception& e)
@@ -71,7 +71,7 @@ void	EventLoop::addServer(Server* server)
 
 int	EventLoop::run(void)
 {
-	LOG_INFO(ConsoleLogger::instance(), "Starting poll loop");
+	LOG_INFO(ConsoleLogger::instance(), "Server is running");
 	while (true)
 	{
 		int	ready = poll(_fds.data(), (nfds_t)_fds.size(), -1);

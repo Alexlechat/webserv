@@ -354,7 +354,7 @@ std::string buildResponse(const HttpRequest& req, const ServerConfig& config)
 		return buildErrorResponse(405, config);
 
 	// ── 4. Check request body size ────────────────────────────────────────────
-	if (req.body.size() > config.client_max_body_size)
+	if (config.client_max_body_size && req.body.size() > config.client_max_body_size)
 		return buildErrorResponse(413, config);
 
 	// ── 5. Route by method ────────────────────────────────────────────────────
