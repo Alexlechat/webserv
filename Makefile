@@ -27,7 +27,7 @@ DIR_DEPS				:=				.deps
 
 
 #	FLAGS
-FLAGS					:=				-Wall -Wextra -Werror -I$(DIR_INCS) -O3
+FLAGS					:=				-Wall -Wextra -Werror -I$(DIR_INCS)
 DEPFLAGS				:=				-MMD -MP
 CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
@@ -41,8 +41,8 @@ SRCS					:=				$(DIR_SRCS)/main.cpp \
 										$(DIR_SRCS)/socket/Socket.cpp \
 										$(DIR_SRCS)/socket/SocketClient.cpp \
 										$(DIR_SRCS)/socket/SocketServer.cpp \
-										$(DIR_SRCS)/request/HttpRequest.cpp \
-										$(DIR_SRCS)/request/Response.cpp \
+										$(DIR_SRCS)/http/HttpRequest.cpp \
+										$(DIR_SRCS)/http/HttpResponse.cpp \
 										$(DIR_SRCS)/logger/Logger.cpp \
 										$(DIR_SRCS)/logger/ConsoleLogger.cpp \
 										$(DIR_SRCS)/logger/FileLogger.cpp \
@@ -57,8 +57,8 @@ INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
 										$(DIR_INCS)/socket/Socket.hpp \
 										$(DIR_INCS)/socket/SocketClient.hpp \
 										$(DIR_INCS)/socket/SocketServer.hpp \
-										$(DIR_INCS)/request/HttpRequest.hpp \
-										$(DIR_INCS)/request/Response.hpp \
+										$(DIR_INCS)/http/HttpRequest.hpp \
+										$(DIR_INCS)/http/HttpResponse.hpp \
 										$(DIR_INCS)/logger/Logger.hpp \
 										$(DIR_INCS)/logger/ConsoleLogger.hpp \
 										$(DIR_INCS)/logger/FileLogger.hpp \
@@ -72,7 +72,7 @@ OBJS					:=				$(addprefix $(DIR_OBJS)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS					:=				$(addprefix $(DIR_DEPS)/, $(notdir $(SRCS:.cpp=.d)))
 
 
-vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config $(DIR_SRCS)/socket $(DIR_SRCS)/request $(DIR_SRCS)/logger $(DIR_SRCS)/utils
+vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config $(DIR_SRCS)/socket $(DIR_SRCS)/http $(DIR_SRCS)/logger $(DIR_SRCS)/utils
 
 
 #	ALL RULE

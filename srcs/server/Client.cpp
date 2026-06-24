@@ -1,6 +1,8 @@
 #include "server/Client.hpp"
 #include "logger/Logger.hpp"
-#include "request/Response.hpp"
+#include "http/Http.hpp"
+#include "http/HttpResponse.hpp"
+#include "utils/Utils.hpp"
 
 #include <cstdlib>
 #include <sstream>
@@ -11,32 +13,65 @@ Client::Client(int fd, const ServerConfig& serverConfig, const FileLogger& acces
 
 Client::~Client(void) {}
 
-bool	Client::tryBuildResponse(void)
+bool	Client::feed(const char *buf, size_t n)
 {
-	if (!parseRequest(_recv_buf, _request))
-		return false;
+	HttpRequest::ParseState	state = _request.feed(std::string(buf, n));
 
-	_send_buf = buildResponse(_request, _serverConfig);
-
-	_status = _send_buf.substr(9, 3);
-	_ip = inet_ntoa(getSockAddr().sin_addr);
-	size_t cl_pos = _send_buf.find("Content-Length: ");
-	if (cl_pos != std::string::npos)
+	if (state == HttpRequest::PARSING_ERROR)
 	{
-		size_t start = cl_pos + 16;
-		size_t end   = _send_buf.find("\r\n", start);
-		_bytesBodySent = _send_buf.substr(start, end - start);
+		_onParseError(Http::BAD_REQUEST);
+		return true;
+	}
+	if (state == HttpRequest::PARSING_COMPLETE)
+	{
+		_onRequestComplete();
+		return true;
 	}
 
-	return true;
+	return false;
+}
+
+void	Client::_onRequestComplete(void)
+{
+	_ip = inet_ntoa(getSockAddr().sin_addr);
+	_send_buf = buildResponse(_request, _serverConfig);
+
+	if (_send_buf.size() > 12)
+		_status = _send_buf.substr(9, 3);
+
+	size_t	cl_pos = _send_buf.find("Content-length:");
+
+	LOG_DEBUG(ConsoleLogger::instance(), _send_buf);
+	LOG_DEBUG(ConsoleLogger::instance(), Utils::toString(cl_pos));
+
+	if (cl_pos != std::string::npos)
+	{
+		size_t	start = cl_pos + 16;
+		size_t	end = _send_buf.find("\r\n", start);
+		_bytesBodySent = _send_buf.substr(start, end - start);
+	}
+}
+
+void	Client::_onParseError(Http::StatusCode code)
+{
+	(void)code;
+	_ip = inet_ntoa(getSockAddr().sin_addr);
+	// HttpResponse	resp(code);
+	// _send_buf = resp.toString();
+	_status = "400";
 }
 
 void	Client::logAccess(void) const
 {
-	std::ostringstream	oss;
+	std::map<std::string, std::string>::const_iterator	ua =
+        _request.headers.find("user-agent");
 
-	oss << _ip << " - - " << "\"" << _request.requestLineToStr()
-		<< "\" " << _status  << " " << _bytesBodySent << " \"-\" " 
-		<< _request.headers.find("user-agent")->second;
+    std::ostringstream oss;
+    oss << _ip << " - - "
+        << "\"" << _request.method << " " << _request.path
+        << " " << _request.version << "\" "
+        << _status << " "
+        << (_bytesBodySent.empty() ? "0" : _bytesBodySent) << " \"-\" "
+        << (ua != _request.headers.end() ? ua->second : "-");;
 	LOG(_accessLogger, oss.str());
 }
