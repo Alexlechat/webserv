@@ -8,6 +8,7 @@
 class	HttpRequest
 {
 	public:
+
 		enum	ParseState
 		{
 			PARSING_REQUEST_LINE,
@@ -25,7 +26,7 @@ class	HttpRequest
 		std::map<std::string, std::string>	headers;
 		std::string							body;
 
-		HttpRequest(void);
+		HttpRequest(std::string& buffer);
 
 		ParseState	feed(const std::string& chunk);
 		ParseState	state(void) const;
@@ -34,10 +35,10 @@ class	HttpRequest
 		void		reset(void);
 
 	private:
-		std::string	_buffer;
-		ParseState	_state;
-		size_t		_contentLenght;
-		bool		_chunked;
+		std::string&	_buffer;
+		ParseState		_state;
+		size_t			_contentLenght;
+		bool			_chunked;
 
 		ParseState	_tryParseRequestLine(void);
 		ParseState	_tryParseHeaders(void);

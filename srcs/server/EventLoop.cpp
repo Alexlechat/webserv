@@ -27,7 +27,7 @@ EventLoop::EventLoop(void) : _logger()
 {
 	try
 	{
-		ConfigParser	configParser("./www/config");
+		ConfigParser	configParser("config");
 
 		std::vector<ServerConfig>::const_iterator	It;
 		for (It = configParser.getServerConfigs().begin(); It != configParser.getServerConfigs().end(); It++)
@@ -123,7 +123,7 @@ void	EventLoop::_acceptNewClient(Server* server)
 		return;
 	}
 
-	Client*	new_client = new Client(client_fd, server->getServerConfig(), server->getServerAccessLogger());
+	Client*	new_client = new Client(client_fd, *server, server->getServerAccessLogger());
 
 	new_client->setSockAddr(addr);
 	new_client->setNonBlocking();
@@ -144,7 +144,10 @@ void	EventLoop::_handleRead(int i)
 	}
 
 	if (client.feed(buf, (size_t)n))
+	{
+		client.logAccess();
 		_fds[i].events = POLLOUT;
+	}
 }
 
 void	EventLoop::_handleWrite(int i)
@@ -157,10 +160,7 @@ void	EventLoop::_handleWrite(int i)
 	if (n > 0) buf.erase(0, n);
  
 	if (buf.empty() || n <= 0)
-	{
-		client.logAccess();
 		_removeClient(i);
-	}
 }
 
 void	EventLoop::_removeClient(int i)

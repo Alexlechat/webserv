@@ -17,6 +17,7 @@ server {
     location /upload {
         methods POST DELETE;
         upload_store www/uploads;
+		upload_return /;
     }
 
     location /cgi-bin {

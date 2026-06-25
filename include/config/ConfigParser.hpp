@@ -38,6 +38,7 @@ class	ConfigParser
 		static void			_handleMethods(ConfigParser& p, LocationConfig& cfg);
 		static void			_handleAutoindex(ConfigParser& p, LocationConfig& cfg);
 		static void			_handleUploadStore(ConfigParser& p, LocationConfig& cfg);
+		static void			_handleUploadReturnUrl(ConfigParser& p, LocationConfig& cfg);
 		static void			_handleRedirect(ConfigParser& p, LocationConfig& cfg);
 		static void			_handleCgiExtension(ConfigParser& p, LocationConfig& cfg);
 

@@ -4,8 +4,9 @@
 #include <cstdlib>
 #include <sstream>
 
-HttpRequest::HttpRequest(void)
+HttpRequest::HttpRequest(std::string& buffer)
 	: methodEnum(Http::UNKNOWN_METHOD)
+	, _buffer(buffer)
 	, _state(PARSING_REQUEST_LINE)
 	, _contentLenght(0)
 	, _chunked(false)

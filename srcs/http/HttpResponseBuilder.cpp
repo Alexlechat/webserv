@@ -12,13 +12,16 @@
 #include <algorithm>
 #include <sys/stat.h>
 
-HttpResponse	buildResponse(const HttpRequest &request, const ServerConfig &config)
+HttpResponse	buildResponse(const HttpRequest& request, const Server& server)
 {
-	return HttpResponseBuilder(request, config).build();
+	return HttpResponseBuilder(request, server).build();
 }
 
-HttpResponseBuilder::HttpResponseBuilder(const HttpRequest& request, const ServerConfig& config)
-	: _request(request), _config(config), _location(NULL)
+HttpResponseBuilder::HttpResponseBuilder(const HttpRequest& request, const Server& server)
+	: _request(request)
+	, _server(server)
+	, _config(_server.getServerConfig())
+	, _location(NULL)
 {}
 
 HttpResponse	HttpResponseBuilder::build(void)
@@ -220,51 +223,211 @@ HttpResponse	HttpResponseBuilder::_autoIndex(const std::string& fsPath) const
 	return resp;
 }
 
-HttpResponse	HttpResponseBuilder::_handleUpload(void)
+HttpResponse HttpResponseBuilder::_handleUpload(void)
 {
-	std::string	filename;
+    std::map<std::string, std::string>::const_iterator ct =
+        _request.headers.find("content-type");
 
-	std::map<std::string, std::string>::const_iterator	cd = _request.headers.find("content-disposition");
-	if (cd != _request.headers.end())
-	{
-		size_t	pos = cd->second.find("filename=");
-		if (pos != std::string::npos)
-		{
-			pos += 9;
-			bool	quoted = (pos < cd->second.size() && cd->second[pos] == '"');
-			if (quoted) ++pos;
-			size_t	end = quoted ? cd->second.find('"', pos)
-								 : cd->second.find(";", pos);
-			if (end == std::string::npos) end = cd->second.size();
-			filename = cd->second.substr(pos, end - pos);
-		}
-	}
+    if (ct == _request.headers.end())
+        return _buildError(Http::BAD_REQUEST);
 
-	if (filename.empty())
-	{
-		std::ostringstream	oss;
-		oss << "upload_" << time(NULL);
-		filename = oss.str();
-	}
+    if (ct->second.find("multipart/form-data") != std::string::npos)
+    {
+        size_t bpos = ct->second.find("boundary=");
+        if (bpos == std::string::npos)
+            return _buildError(Http::BAD_REQUEST);
 
-	std::string	uploadPath = _location->upload_store;
-	if (uploadPath[uploadPath.size() - 1] != '/') uploadPath += '/';
-	uploadPath += filename;
-	
-	std::ofstream	file(uploadPath.c_str(), std::ios::binary);
-	if (!file)
-		return _buildError(Http::FORBIDDEN);
+        std::string boundary = ct->second.substr(bpos + 9);
+        // trim any trailing whitespace that some clients append
+        size_t end = boundary.find_first_of(" \t\r\n");
+        if (end != std::string::npos) boundary = boundary.substr(0, end);
 
-	file.write(_request.body.c_str(), (std::streamsize)_request.body.size());
-	if (!file)
-	{
-		// TODO LOG INTO ERROR.LOG
-		return _buildError(Http::INTERNAL_SERVER_ERROR);
-	}
+        return _handleMultipartUpload(boundary);
+    }
 
-	HttpResponse	resp(Http::CREATED);
-	resp.setHeader("location", _request.path + filename);
-	return resp;
+    return _handleRawUpload();
+}
+
+// Splits a multipart body into its constituent parts, each with their own
+// parsed headers and body. Boundary is the raw value from Content-Type
+// (without the leading "--").
+std::vector<HttpResponseBuilder::MultipartPart>
+HttpResponseBuilder::_parseMultipart(const std::string& boundary) const
+{
+    std::vector<MultipartPart> parts;
+    std::string delim = "--" + boundary;
+
+    size_t pos = _request.body.find(delim);
+    if (pos == std::string::npos) return parts;
+
+    while (true)
+    {
+        pos += delim.size();
+        if (pos + 2 > _request.body.size()) break;
+
+        // "--" after the boundary means the final delimiter
+        if (_request.body[pos] == '-' && _request.body[pos + 1] == '-') break;
+
+        // skip the CRLF that follows the boundary line
+        if (_request.body[pos] == '\r') pos += 2;
+        else break;
+
+        size_t headerEnd = _request.body.find("\r\n\r\n", pos);
+        if (headerEnd == std::string::npos) break;
+
+        MultipartPart part;
+
+        // parse this part's headers
+        size_t hPos = pos;
+        while (hPos < headerEnd)
+        {
+            size_t lineEnd = _request.body.find("\r\n", hPos);
+            if (lineEnd == std::string::npos || lineEnd > headerEnd) break;
+
+            size_t colon = _request.body.find(':', hPos);
+            if (colon != std::string::npos && colon < lineEnd)
+            {
+                std::string key = Utils::strToLower(Utils::trim(
+                    _request.body.substr(hPos, colon - hPos), Http::SPACE_CHARS));
+                std::string val = Utils::trim(
+                    _request.body.substr(colon + 1, lineEnd - colon - 1), Http::SPACE_CHARS);
+                part.headers[key] = val;
+            }
+            hPos = lineEnd + 2;
+        }
+
+        size_t bodyStart = headerEnd + 4;
+
+        // the part body ends just before the next boundary (always preceded by CRLF)
+        size_t nextBoundary = _request.body.find("\r\n" + delim, bodyStart);
+        if (nextBoundary == std::string::npos) break;
+
+        part.body = _request.body.substr(bodyStart, nextBoundary - bodyStart);
+        parts.push_back(part);
+
+        pos = nextBoundary + 2;   // step to the "--boundary" line
+    }
+
+    return parts;
+}
+
+HttpResponse HttpResponseBuilder::_handleMultipartUpload(const std::string& boundary)
+{
+    std::vector<MultipartPart> parts = _parseMultipart(boundary);
+    if (parts.empty())
+        return _buildError(Http::BAD_REQUEST);
+
+    HttpResponse lastResp = _buildError(Http::BAD_REQUEST);
+    bool savedAny = false;
+
+    for (size_t i = 0; i < parts.size(); ++i)
+    {
+        std::map<std::string, std::string>::const_iterator cd =
+            parts[i].headers.find("content-disposition");
+        if (cd == parts[i].headers.end()) continue;
+
+        // only process parts that carry a filename (i.e. file fields, not text fields)
+        std::string filename = _extractFilename(cd->second);
+        if (filename.empty()) continue;
+
+        lastResp  = _saveUploadedFile(filename, parts[i].body);
+        savedAny  = true;
+    }
+
+    return savedAny ? lastResp : _buildError(Http::BAD_REQUEST);
+}
+
+HttpResponse HttpResponseBuilder::_handleRawUpload(void)
+{
+    std::string filename;
+
+    // For raw uploads Content-Disposition may be a request header
+    std::map<std::string, std::string>::const_iterator cd =
+        _request.headers.find("content-disposition");
+    if (cd != _request.headers.end())
+        filename = _extractFilename(cd->second);
+
+    if (filename.empty())
+    {
+        // derive extension from Content-Type so the file is usable
+        std::string ext;
+        std::map<std::string, std::string>::const_iterator ct =
+            _request.headers.find("content-type");
+        if (ct != _request.headers.end())
+            ext = _extFromContentType(ct->second);
+
+        std::ostringstream oss;
+        oss << "upload_" << time(NULL) << ext;
+        filename = oss.str();
+    }
+
+    return _saveUploadedFile(filename, _request.body);
+}
+
+// Shared between multipart and raw paths
+HttpResponse HttpResponseBuilder::_saveUploadedFile(const std::string& filename,
+                                                 const std::string& content)
+{
+    std::string uploadPath = _location->upload_store;
+    if (uploadPath[uploadPath.size() - 1] != '/') uploadPath += '/';
+    uploadPath += filename;
+
+    std::ofstream file(uploadPath.c_str(), std::ios::binary);
+    if (!file) return _buildError(Http::FORBIDDEN);
+
+    file.write(content.c_str(), (std::streamsize)content.size());
+    if (!file) return _buildError(Http::INTERNAL_SERVER_ERROR);
+
+    // Bug 3 answer: config-specified redirect takes priority
+    if (!_location->uploadReturnUrl.empty())
+    {
+        HttpResponse resp(Http::SEE_OTHER);
+        resp.setHeader("location", _location->uploadReturnUrl);
+        return resp;
+    }
+
+    // Default: 201 Created with a minimal body so the browser has something to show
+    std::ostringstream html;
+    html << "<!DOCTYPE html><html><body>"
+         << "<p>Uploaded: <a href=\"" << _request.path << filename << "\">"
+         << filename << "</a></p>"
+         << "</body></html>";
+
+    HttpResponse resp(Http::CREATED);
+    resp.setHeader("location", _request.path + filename);
+    resp.setBody(html.str(), "text/html");
+    return resp;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+std::string HttpResponseBuilder::_extractFilename(const std::string& disposition) const
+{
+    size_t pos = disposition.find("filename=");
+    if (pos == std::string::npos) return "";
+
+    pos += 9;
+    bool quoted = pos < disposition.size() && disposition[pos] == '"';
+    if (quoted) ++pos;
+
+    size_t end = quoted ? disposition.find('"',  pos)
+                        : disposition.find(';', pos);
+    if (end == std::string::npos) end = disposition.size();
+
+    return disposition.substr(pos, end - pos);
+}
+
+std::string HttpResponseBuilder::_extFromContentType(const std::string& ct) const
+{
+    if (ct.find("jpeg") != std::string::npos
+     || ct.find("jpg")  != std::string::npos) return ".jpg";
+    if (ct.find("png")  != std::string::npos) return ".png";
+    if (ct.find("gif")  != std::string::npos) return ".gif";
+    if (ct.find("webp") != std::string::npos) return ".webp";
+    if (ct.find("pdf")  != std::string::npos) return ".pdf";
+    if (ct.find("text/plain") != std::string::npos) return ".txt";
+    if (ct.find("text/html")  != std::string::npos) return ".html";
+    return "";
 }
 
 HttpResponse	HttpResponseBuilder::_executeCgi(const std::string& fsPath, const std::string& interpreter)

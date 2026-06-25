@@ -40,6 +40,7 @@ namespace	Http
         NO_CONTENT          	= 204,
         MOVED_PERMANENTLY   	= 301,
         FOUND               	= 302,
+		SEE_OTHER				= 303,
         NOT_MODIFIED        	= 304,
         BAD_REQUEST         	= 400,
         FORBIDDEN           	= 403,
@@ -63,6 +64,7 @@ namespace	Http
             case NO_CONTENT:            return "No Content";
             case MOVED_PERMANENTLY:     return "Moved Permanently";
             case FOUND:                 return "Found";
+			case SEE_OTHER:				return "SEE_OTHER";
             case NOT_MODIFIED:          return "Not Modified";
             case BAD_REQUEST:           return "Bad Request";
             case FORBIDDEN:             return "Forbidden";

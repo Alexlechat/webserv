@@ -14,6 +14,7 @@ struct	LocationConfig
 	std::string								root;
 	std::string								index;
 	std::string								upload_store;
+	std::string								uploadReturnUrl;
 	bool									autoindex;
 	std::set<std::string>					methods;
 	std::pair<int, std::string>				redirect;
@@ -25,8 +26,8 @@ struct	LocationConfig
 	void	setRoot(std::string new_root) { root = new_root; }
 	void	setIndex(std::string new_index) { index = new_index; }
 	void	setUploadStore(std::string new_upload_store) { upload_store = new_upload_store; }
+	void	setUploadReturnUrl(std::string new_upload_return_url) { uploadReturnUrl = new_upload_return_url; }
 	void	setAutoindex(std::string new_autoindex) { autoindex = new_autoindex == "on"; }
-
 	void	setMethods(std::string new_method) { methods.insert(new_method); }
 	void	setRedirects(std::string new_redirect_code, std::string new_redirect_url)
 	{

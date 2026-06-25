@@ -7,8 +7,12 @@
 #include <sstream>
 #include <arpa/inet.h>
 
-Client::Client(int fd, const ServerConfig& serverConfig, const FileLogger& accessLogger)
-	: SocketClient(fd), _accessLogger(accessLogger), _serverConfig(serverConfig) {}
+Client::Client(int fd, const Server& server, const FileLogger& accessLogger)
+	: SocketClient(fd)
+	, _request(_recv_buf)
+	, _server(server)
+	, _accessLogger(accessLogger)
+{}
 
 Client::~Client(void) {}
 
@@ -32,19 +36,8 @@ bool	Client::feed(const char *buf, size_t n)
 
 void	Client::_onRequestComplete(void)
 {
-	_response = buildResponse(_request, _serverConfig);
+	_response = buildResponse(_request, _server);
 	_send_buf = _response.toString();
-
-	_ip = inet_ntoa(getSockAddr().sin_addr);
-	_status = _response.status();
-
-	size_t	cl_pos = _send_buf.find("Content-Length");
-	if (cl_pos != std::string::npos)
-	{
-		size_t	start = cl_pos + 16;
-		size_t	end = _send_buf.find("\r\n", start);
-		_bytesBodySent = _send_buf.substr(start, end - start);
-	}
 }
 
 void	Client::_onParseError(Http::StatusCode code)
@@ -55,13 +48,25 @@ void	Client::_onParseError(Http::StatusCode code)
 	_status = Http::BAD_REQUEST;
 }
 
-void	Client::logAccess(void) const
+void	Client::logAccess(void)
 {
+	int port = _server.getServerConfig().port;
+	_ip = inet_ntoa(getSockAddr().sin_addr);
+	_status = _response.status();
+
+	size_t	cl_pos = _send_buf.find("content-length");
+	if (cl_pos != std::string::npos)
+	{
+		size_t	start = cl_pos + 16;
+		size_t	end = _send_buf.find("\r\n", start);
+		_bytesBodySent = _send_buf.substr(start, end - start);
+	}
+
 	std::map<std::string, std::string>::const_iterator	ua =
         _request.headers.find("user-agent");
 
     std::ostringstream oss;
-    oss << _ip << " - - "
+    oss << _ip << ":" << port << " - - "
         << "\"" << _request.method << " " << _request.path
         << " " << _request.version << "\" "
         << (int)_status << " "
