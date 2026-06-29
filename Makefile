@@ -34,6 +34,7 @@ CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
 #	SOURCES AND HEADERS
 SRCS					:=				$(DIR_SRCS)/main.cpp \
+										$(DIR_SRCS)/CGI/CGI.cpp \
 										$(DIR_SRCS)/config/ConfigParser.cpp \
 										$(DIR_SRCS)/server/Client.cpp \
 										$(DIR_SRCS)/server/EventLoop.cpp \
@@ -50,7 +51,8 @@ SRCS					:=				$(DIR_SRCS)/main.cpp \
 										$(DIR_SRCS)/utils/Utils.cpp 
 
 
-INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
+INCS					:=				$(DIR_INCS)/CGI/CgiHandler.hpp \
+										$(DIR_INCS)/config/ConfigParser.hpp \
 										$(DIR_INCS)/server/Client.hpp \
 										$(DIR_INCS)/server/EventLoop.hpp \
 										$(DIR_INCS)/server/Server.hpp \
@@ -72,7 +74,7 @@ OBJS					:=				$(addprefix $(DIR_OBJS)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS					:=				$(addprefix $(DIR_DEPS)/, $(notdir $(SRCS:.cpp=.d)))
 
 
-vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config $(DIR_SRCS)/socket $(DIR_SRCS)/request $(DIR_SRCS)/logger $(DIR_SRCS)/utils
+vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config $(DIR_SRCS)/socket $(DIR_SRCS)/request $(DIR_SRCS)/logger $(DIR_SRCS)/utils $(DIR_SRCS)/CGI
 
 
 #	ALL RULE

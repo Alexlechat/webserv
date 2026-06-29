@@ -1,4 +1,6 @@
 #include "request/Response.hpp"
+#include "CGI/CgiHandler.hpp"
+
 #include <fstream>
 #include <sstream>
 #include <cstring>
@@ -381,6 +383,18 @@ std::string buildResponse(const HttpRequest& req, const ServerConfig& config)
 	// GET → serve file or directory
 	if (req.method == "GET")
 	{
+		//── CGI detection ────────────────────────────────────────────────────
+		size_t	dot = req.path.rfind('.');
+		if (dot != std::string::npos)
+		{
+			std::string ext = req.path.substr(dot);
+			if (loc->cgi_extensions.count(ext))
+			{
+				CgiHandler	cgi(req, *loc);
+				return cgi.execute();
+			}
+		}
+
 		std::string filepath = resolveFilepath(*loc, req.path);
 
 		// Directory handling
@@ -411,4 +425,10 @@ std::string buildResponse(const HttpRequest& req, const ServerConfig& config)
 	}
 
 	return buildErrorResponse(400, config);
+}
+
+
+std::string	buildCgiResponse(const HttpRequest& req, const LocationConfig& loc)
+{
+
 }

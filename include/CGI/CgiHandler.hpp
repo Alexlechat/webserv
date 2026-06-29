@@ -14,9 +14,9 @@ class CgiHandler
         CgiHandler(const HttpRequest& request, const LocationConfig& location);
         ~CgiHandler();
 
-        int     execute();
-        pid_t   getPid() const;
-        int     getPipeFd() const;
+        std::string     execute();
+        pid_t           getPid() const;
+        int             getPipeFd() const;
 
     private:
         const HttpRequest&          _request;

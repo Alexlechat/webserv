@@ -18,6 +18,7 @@ std::string buildAutoindexResponse(const std::string& dirPath,
                                     const std::string& urlPath);
 std::string buildUploadResponse(const HttpRequest& req, const LocationConfig& loc);
 std::string buildDeleteResponse(const std::string& filepath);
+std::string buildCgiResponse(const HttpRequest& req, const LocationConfig& loc);
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 std::string getMimeType(const std::string& filepath);
