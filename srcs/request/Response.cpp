@@ -364,9 +364,19 @@ std::string buildResponse(const HttpRequest& req, const ServerConfig& config)
 	// POST → file upload
 	if (req.method == "POST")
 	{
+		//check CGI
+		size_t	dot = req.path.rfind('.');
+		if (dot != std::string::npos)
+		{
+			std::string	ext = req.path.substr(dot);
+			if (loc->cgi_extensions.count(ext))
+			{
+				return buildCgiResponse(req, *loc);
+			}
+		}
+
 		if (!loc->upload_store.empty())
 			return buildUploadResponse(req, *loc);
-		// POST to CGI would be handled here later
 		return buildErrorResponse(405, config);
 	}
 
@@ -430,5 +440,7 @@ std::string buildResponse(const HttpRequest& req, const ServerConfig& config)
 
 std::string	buildCgiResponse(const HttpRequest& req, const LocationConfig& loc)
 {
+	CgiHandler	cgi(req, loc);
 
+	return cgi.execute();
 }

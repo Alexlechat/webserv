@@ -1,6 +1,7 @@
 #include "CGI/CgiHandler.hpp"
 #include "request/Response.hpp"
 
+#include <sstream>
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -108,7 +109,7 @@ void    CgiHandler::_setupChild(int pipeOut[2], int pipeIn[2])
         NULL
     };
 
-    chdir(_location.root.c_str());
+    //chdir(_location.root.c_str());
     execve(interpreter.c_str(), args, env.data());
 
     std::cerr << "execve() failed\n";
@@ -129,4 +130,65 @@ void    CgiHandler::_setupParent(int pipeOut[2], int pipeIn[2])
 
     close(pipeIn[1]);
     _pipeFd = pipeOut[0];
+}
+
+
+//INTERPRETER
+std::string CgiHandler::_resolveInterpreter() const
+{
+    size_t  dot = _request.path.rfind('.');
+    if (dot == std::string::npos)
+    {
+        return "";
+    }
+
+    std::string ext = _request.path.substr(dot);
+
+    std::map<std::string, std::string>::const_iterator  it;
+    it = _location.cgi_extensions.find(ext);
+    if (it == _location.cgi_extensions.end())
+    {
+        return "";
+    }
+
+    return it->second;
+}
+
+
+//PATH
+std::string CgiHandler::_resolveScriptPath() const
+{
+    return _location.root + _request.path;
+}
+
+
+//ENV
+std::vector<std::string>    CgiHandler::_buildEnv() const
+{
+    std::vector<std::string>    env;
+
+    std::ostringstream  contentLength;
+    contentLength << _request.body.size();
+
+    env.push_back("REQUEST_METHOD=" + _request.method);
+    env.push_back("QUERY_STRING=" + _request.query_string);
+    env.push_back("SCRIPT_FILENAME=" + _resolveScriptPath());
+    env.push_back("PATH_INFO=" + _request.path);
+    env.push_back("CONTENT_LENGTH=" + contentLength.str());
+
+    std::map<std::string, std::string>::const_iterator  it;
+
+    it = _request.headers.find("content-type");
+    if (it != _request.headers.end())
+    {
+        env.push_back("CONTENT_TYPE=" + it->second);
+    }
+
+    it = _request.headers.find("host");
+    if (it != _request.headers.end())
+    {
+        env.push_back("HTTP_HOST=" + it->second);
+    }
+
+    return env;
 }
