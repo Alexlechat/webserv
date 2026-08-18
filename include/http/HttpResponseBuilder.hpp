@@ -42,16 +42,20 @@ class	HttpResponseBuilder
 		BuildResult		_handleGet(void);
 		BuildResult		_handlePost(void);
 		HttpResponse	_handleDelete(void);
+		BuildResult		_tryCgiWithPathInfo(void);
 
 		HttpResponse	_serveFile(const std::string& fsPath);
 		BuildResult		_serveDirectory(const std::string& fsPath);
 		HttpResponse	_autoIndex(const std::string& fsPath) const;
 		HttpResponse	_handleUpload(void);
-		BuildResult		_startCgi(const std::string& fsPath, const std::string& interpreter);
+		BuildResult		_startCgi(const std::string& fsPath, const std::string& pathInfo, const std::string& interpreter);
 		HttpResponse	_buildError(Http::StatusCode code) const;
 
 		bool			_isMethodAllowed(void) const;
 		bool			_matchCgi(const std::string& path, std::string& outInterpreter) const;
+		bool			_matchCgiWithPathInfo(const std::string& requestPath,
+						std::string& outScriptPath, std::string& outPathInfo,
+						std::string& outInterpreter) const;
 		bool			_parseMultipartUpload(std::string& outFilename, std::string& outContent) const;
 		std::string		_getContentType(const std::string& path) const;
 		std::string		_readFile(const std::string& path, bool& ok) const;

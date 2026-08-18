@@ -34,6 +34,8 @@ class	Client : public SocketClient
 
 		time_t				getLastActivity(void) const;
 		bool				isAwaitingResponse(void) const;
+		bool				keepAlive(void) const;
+		void				resetForNextRequest(void);
 
 		bool				hasCgi(void) const;
 		Cgi*				getCgi(void) const;
@@ -57,9 +59,11 @@ class	Client : public SocketClient
 		const std::vector<ServerConfig>&	_serverConfigs;
 		time_t						_lastActivity;
 		bool						_awaitingResponse;
+		bool						_keepAlive;
 		Cgi*						_cgi;
 
 		const ServerConfig&	_selectConfig(void) const;
+		bool				_wantsKeepAlive(void) const;
 
 		FeedResult	_onRequestComplete(void);
 		void		_onParseError(Http::StatusCode code);

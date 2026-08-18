@@ -17,3 +17,8 @@
 !www/**
 
 !README.md
+!ERRORS.md
+
+# Exclude generated files
+logs/*.log
+compile_commands.json

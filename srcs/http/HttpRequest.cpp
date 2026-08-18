@@ -49,6 +49,11 @@ HttpRequest::ParseState	HttpRequest::_tryParseRequestLine(void)
 	if (method.empty() || path.empty() || version.empty())
 		return PARSING_ERROR;
 
+	if (version.compare(0, 5, "HTTP/") != 0)
+		return PARSING_ERROR;
+	if (version != "HTTP/1.0" && version != "HTTP/1.1")
+		return PARSING_ERROR;
+
 	size_t	q = path.find('?');
 	if (q != std::string::npos)
 	{
@@ -56,6 +61,7 @@ HttpRequest::ParseState	HttpRequest::_tryParseRequestLine(void)
 		path = path.substr(0, q);
 	}
 
+	path = Utils::urlDecode(path);
 	methodEnum = Http::strToMethod(method);
 	_buffer.erase(0, lineEnd + 2);
 	return PARSING_HEADERS;
@@ -116,6 +122,9 @@ HttpRequest::ParseState	HttpRequest::_tryParseHeaders(void)
 
 HttpRequest::ParseState	HttpRequest::_tryParseBody(void)
 {
+	if (_maxBodySize > 0 && _contentLenght > _maxBodySize)
+		return PARSING_TOO_LARGE;
+
 	if (_buffer.size() < _contentLenght)
 		return PARSING_BODY;
 

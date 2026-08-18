@@ -43,6 +43,9 @@ namespace Utils
 	// external-function list.
 	std::string	ipv4ToString(unsigned int hostOrderAddr);
 
+	std::string	urlDecode(const std::string& s);
+	std::string	htmlEscape(const std::string& s);
+
 	bool		dir_exists(const std::string& path);
 	bool		file_exists(const std::string& filepath);
 };

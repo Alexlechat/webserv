@@ -18,7 +18,7 @@
 #include <sys/poll.h>
 #include <sys/wait.h>
 
-volatile bool	g_server_running = true;
+volatile sig_atomic_t	g_server_running = 1;
 
 static struct pollfd	make_pollfd(int fd, short events)
 {
@@ -33,8 +33,8 @@ void	signal_handler(int sig)
 {
 	if (sig == SIGINT)
 	{
-		g_server_running = false;
-		std::cout << '\n';
+		g_server_running = 0;
+		write(STDOUT_FILENO, "\n", 1);
 	}
 	return ;
 }
@@ -69,8 +69,11 @@ EventLoop::EventLoop(const std::string& configPath) : _logger()
 	}
 	catch (const std::exception& e)
 	{
+		for (size_t j = 0; j < _servers.size(); ++j)
+			delete _servers[j];
+		_servers.clear();
 		LOG_CRITICAL(ConsoleLogger::instance(), e.what());
-		exit(1);
+		throw;
 	}
 
 	_logger.addLogger(ConsoleLogger::instance());
@@ -257,12 +260,29 @@ void	EventLoop::_handleWrite(int i)
 
 	ssize_t n = send(_fds[i].fd, buf.c_str(), buf.size(), 0);
 
-	if (n > 0) buf.erase(0, n);
+	if (n > 0)
+		buf.erase(0, n);
 
-	if (buf.empty() || n <= 0)
+	if (buf.empty())
 	{
 		client.logAccess();
-		_removeClient(i);
+		if (client.keepAlive())
+		{
+			client.resetForNextRequest();
+			_fds[i].events = POLLIN;
+		}
+		else
+			_removeClient(i);
+	}
+	else if (n < 0)
+	{
+		// EAGAIN/EWOULDBLOCK: retry on next poll cycle (do nothing).
+		// Any other error: drop the client.
+		if (errno != EAGAIN && errno != EWOULDBLOCK)
+		{
+			client.logAccess();
+			_removeClient(i);
+		}
 	}
 }
 
@@ -279,7 +299,6 @@ void	EventLoop::_removeClient(int i)
 		_untrackCgiClient(client);
 	}
 
-	close(_fds[i].fd);
 	delete client;
 	_fds.erase(_fds.begin() + i);
 	_fdTypes.erase(_fdTypes.begin() + i);

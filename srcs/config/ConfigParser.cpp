@@ -73,7 +73,6 @@ void	ConfigParser::_handleClientMaxBodySize(ConfigParser& p, Config& cfg)
 
 void	ConfigParser::_handleErrorPages(ConfigParser& p, Config& cfg)
 {
-	//TODO: Fix error pages that cant be placed in location block
 	const std::string&	code = p._consume();
 	const std::string&	page = p._consume();
 
@@ -93,7 +92,10 @@ void	ConfigParser::_handleCgiExtensions(ConfigParser& p, Config& cfg)
 void	ConfigParser::_handleErrorLog(ConfigParser& p, Config& cfg)
 {
 	const std::string&	filepath = p._consume();
-	const std::string&	min_log_level = p._consume();
+	std::string			min_log_level = "error";
+
+	if (p._current() != ";")
+		min_log_level = p._consume();
 
 	cfg.error_log_config.value.setErrorFileLogger(filepath, min_log_level);
 	cfg.error_log_config.specified = true;
@@ -113,7 +115,7 @@ void	ConfigParser::_handleAccessLog(ConfigParser& p, Config& cfg)
 
 void	ConfigParser::_handleListen(ConfigParser& p, Config& cfg)
 {
-	static_cast<ServerConfig&>(cfg).setPort(p._consume());
+	static_cast<ServerConfig&>(cfg).setListen(p._consume());
 	p._expect(";");
 }
 

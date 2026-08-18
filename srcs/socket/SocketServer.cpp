@@ -1,10 +1,11 @@
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
+#include <arpa/inet.h>
 
 #include "socket/SocketServer.hpp"
 
-SocketServer::SocketServer(uint16_t port)
+SocketServer::SocketServer(uint16_t port, const std::string& host)
 {
 
     int	opt = 1;
@@ -13,7 +14,14 @@ SocketServer::SocketServer(uint16_t port)
     std::memset(&_address, 0, sizeof(_address));
     _address.sin_family = AF_INET;
     _address.sin_port = htons(port);
-    _address.sin_addr.s_addr = INADDR_ANY;
+
+    if (!host.empty() && host != "0.0.0.0")
+    {
+        if (inet_pton(AF_INET, host.c_str(), &_address.sin_addr) != 1)
+            throw std::runtime_error("Invalid listen address: " + host);
+    }
+    else
+        _address.sin_addr.s_addr = INADDR_ANY;
 }
 
 SocketServer::~SocketServer() {}
@@ -33,15 +41,4 @@ void    SocketServer::listenSocket(int maxConnections)
 {
     if (listen(getSocketFd(), maxConnections) < 0)
         throw std::runtime_error("listen() failed");
-}
-
-int    SocketServer::acceptClient()
-{
-    int client_fd = accept(getSocketFd(), NULL, NULL);
-
-    if (client_fd < 0)
-        throw std::runtime_error("accept() failed");
-    std::cout << "client connected" << std::endl;
-
-    return (client_fd);
 }

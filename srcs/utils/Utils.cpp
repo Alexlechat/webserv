@@ -103,6 +103,57 @@ std::string	Utils::sanitizeFilename(const std::string& filename)
 	return base;
 }
 
+static int	hexCharToInt(char c)
+{
+	if (c >= '0' && c <= '9') return c - '0';
+	if (c >= 'a' && c <= 'f') return 10 + c - 'a';
+	if (c >= 'A' && c <= 'F') return 10 + c - 'A';
+	return -1;
+}
+
+std::string	Utils::urlDecode(const std::string& s)
+{
+	std::string	out;
+	out.reserve(s.size());
+
+	for (size_t i = 0; i < s.size(); ++i)
+	{
+		if (s[i] == '%' && i + 2 < s.size())
+		{
+			int	hi = hexCharToInt(s[i + 1]);
+			int	lo = hexCharToInt(s[i + 2]);
+			if (hi >= 0 && lo >= 0)
+			{
+				out += static_cast<char>((hi << 4) | lo);
+				i += 2;
+				continue;
+			}
+		}
+		out += s[i];
+	}
+	return out;
+}
+
+std::string	Utils::htmlEscape(const std::string& s)
+{
+	std::string	out;
+	out.reserve(s.size());
+
+	for (size_t i = 0; i < s.size(); ++i)
+	{
+		switch (s[i])
+		{
+			case '&':  out += "&amp;";  break;
+			case '<':  out += "&lt;";   break;
+			case '>':  out += "&gt;";   break;
+			case '"':  out += "&quot;"; break;
+			case '\'': out += "&#39;";  break;
+			default:   out += s[i];     break;
+		}
+	}
+	return out;
+}
+
 std::string	Utils::ipv4ToString(unsigned int hostOrderAddr)
 {
 	std::ostringstream	oss;

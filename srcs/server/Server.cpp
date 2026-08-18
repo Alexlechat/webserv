@@ -3,7 +3,8 @@
 #include <stdexcept>
 
 Server::Server(const std::vector<ServerConfig>& serverConfigs)
-	: SocketServer(serverConfigs.empty() ? 0 : serverConfigs[0].port),
+	: SocketServer(serverConfigs.empty() ? 0 : serverConfigs[0].port,
+				   serverConfigs.empty() || !serverConfigs[0].host.specified ? "" : serverConfigs[0].host.value),
 	  _serverConfigs(serverConfigs)
 {
 	if (_serverConfigs.empty())

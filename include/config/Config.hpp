@@ -93,7 +93,7 @@ struct	Config
 			throw std::invalid_argument("Invalid client_max_body_size: " + new_cmbs);
 
 		if (val > std::numeric_limits<size_t>::max())
-			throw std::out_of_range("Port out of range: " + new_cmbs);
+			throw std::out_of_range("client_max_body_size out of range: " + new_cmbs);
 
 		client_max_body_size.set(val);
 	}
@@ -107,7 +107,7 @@ struct	Config
 			throw std::invalid_argument("Invalid error page code: " + new_code);
 
 		if (val < 100 || val > 599)
-			throw std::out_of_range("Port out of range: " + new_code);
+			throw std::out_of_range("Error page code out of range: " + new_code);
 
 		error_pages[static_cast<unsigned short>(val)] = new_page;
 	}

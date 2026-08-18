@@ -6,12 +6,13 @@
 #include "utils/Utils.hpp"
 
 #include <cstdlib>
+#include <ctime>
 #include <sstream>
 #include <netinet/in.h>
 
 Client::Client(int fd, const std::vector<ServerConfig>& serverConfigs, const FileLogger& accessLogger)
 	: SocketClient(fd), _status(Http::OK), _accessLogger(accessLogger), _serverConfigs(serverConfigs),
-	  _lastActivity(std::time(NULL)), _awaitingResponse(false), _cgi(NULL)
+	  _lastActivity(std::time(NULL)), _awaitingResponse(false), _keepAlive(false), _cgi(NULL)
 {
 	size_t	coarseCap = 0; // 0 == unlimited
 	for (size_t i = 0; i < _serverConfigs.size(); ++i)
@@ -31,8 +32,30 @@ Client::~Client(void) { delete _cgi; }
 
 time_t	Client::getLastActivity(void) const { return _lastActivity; }
 bool	Client::isAwaitingResponse(void) const { return _awaitingResponse; }
+bool	Client::keepAlive(void) const { return _keepAlive; }
 bool	Client::hasCgi(void) const { return _cgi != NULL; }
 Cgi*	Client::getCgi(void) const { return _cgi; }
+
+bool	Client::_wantsKeepAlive(void) const
+{
+	std::map<std::string, std::string>::const_iterator	it = _request.headers.find("connection");
+
+	if (it != _request.headers.end())
+		return Utils::strToLower(it->second) != "close";
+
+	// HTTP/1.1 defaults to keep-alive, HTTP/1.0 defaults to close.
+	return _request.version == "HTTP/1.1";
+}
+
+void	Client::resetForNextRequest(void)
+{
+	_request.reset();
+	_response = HttpResponse();
+	_send_buf.clear();
+	_awaitingResponse = false;
+	_keepAlive = false;
+	_lastActivity = std::time(NULL);
+}
 
 void	Client::_captureIp(void)
 {
@@ -86,6 +109,14 @@ const ServerConfig&	Client::_selectConfig(void) const
 
 Client::FeedResult	Client::_onRequestComplete(void)
 {
+	// HTTP/1.1 requires a Host header (RFC 7230 §5.4).
+	if (_request.version == "HTTP/1.1"
+		&& _request.headers.find("host") == _request.headers.end())
+	{
+		_onParseError(Http::BAD_REQUEST);
+		return FEED_RESPONSE_READY;
+	}
+
 	const ServerConfig&					cfg = _selectConfig();
 	HttpResponseBuilder::BuildResult	result = buildResponse(_request, cfg);
 
@@ -151,7 +182,16 @@ void	Client::logAccess(void) const
 
 void	Client::_finalizeResponse(void)
 {
-	_response.setHeader("connection", "close");
+	_keepAlive = _wantsKeepAlive();
+	_response.setHeader("connection", _keepAlive ? "keep-alive" : "close");
+
+	// RFC 7231 §7.1.1.2: servers with a clock MUST send a Date header.
+	char		dateBuf[64];
+	std::time_t	now = std::time(NULL);
+	struct tm*	gmt = gmtime(&now);
+	std::strftime(dateBuf, sizeof(dateBuf), "%a, %d %b %Y %H:%M:%S GMT", gmt);
+	_response.setHeader("date", dateBuf);
+
 	_send_buf = _response.toString();
 	_awaitingResponse = true;
 	_status = _response.status();

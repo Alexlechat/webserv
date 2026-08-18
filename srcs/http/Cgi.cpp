@@ -98,6 +98,11 @@ bool	Cgi::start(void)
 		close(inPipe[0]); close(inPipe[1]);
 		close(outPipe[0]); close(outPipe[1]);
 
+		// Close all inherited fds (server sockets, client sockets, other
+		// CGI pipes) so they don't leak into the child process.
+		for (int fd = STDERR_FILENO + 1; fd < 1024; ++fd)
+			close(fd);
+
 		std::string	dir = ".";
 		std::string	base = _scriptPath;
 		size_t		slash = _scriptPath.find_last_of('/');

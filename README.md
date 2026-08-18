@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by <your_login>.*
+*This project has been created as part of the 42 curriculum by anpicard.*
 
 # webserv
 
@@ -97,11 +97,6 @@ An AI assistant (Claude, Anthropic) was used during this project for:
 
 ## Known simplifications
 
-- CGI I/O (writing the request body to, and reading the response from, the child process's
-  pipes) is driven by a small, bounded, **local** `poll()` loop scoped to that one request,
-  rather than being folded into `EventLoop`'s single global `poll()`. This keeps a CGI script
-  from ever hanging the server (a hard timeout kills it), but it does mean CGI pipe I/O isn't
-  multiplexed on the same `poll()` call as client sockets. Fully unifying it would require
-  turning CGI execution into another pollable state inside `EventLoop`/`Client`.
-- `PATH_INFO` (extra path segments after the CGI script name, e.g. `/cgi-bin/script.py/x/y`)
-  is not extracted; the resolved path must point directly at an existing script file.
+- CGI pipe I/O (stdin/stdout of child processes) is fully integrated into `EventLoop`'s
+  single global `poll()` loop, with a bounded timeout that kills runaway scripts. This means
+  CGI execution is non-blocking and multiplexed alongside all client socket I/O.

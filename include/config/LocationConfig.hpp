@@ -43,9 +43,8 @@ struct	LocationConfig : public Config
 
 	void	setUploadReturn(const std::string& new_upload_return)
 	{
-		if (!Utils::dir_exists(new_upload_return))
-			throw std::invalid_argument("Invalid upload_return parameter : "
-					+ new_upload_return + ". Directory does not exist");
+		if (new_upload_return.empty())
+			throw std::invalid_argument("Invalid upload_return parameter: empty value");
 
 		upload_return.set(new_upload_return);
 	}
