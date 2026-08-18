@@ -1,9 +1,10 @@
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
-#include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include "socket/SocketServer.hpp"
+#include "utils/Utils.hpp"
 
 SocketServer::SocketServer(uint16_t port, const std::string& host)
 {
@@ -17,11 +18,14 @@ SocketServer::SocketServer(uint16_t port, const std::string& host)
 
     if (!host.empty() && host != "0.0.0.0")
     {
-        if (inet_pton(AF_INET, host.c_str(), &_address.sin_addr) != 1)
+        unsigned int    hostOrderAddr = 0;
+
+        if (!Utils::ipv4FromString(host, hostOrderAddr))
             throw std::runtime_error("Invalid listen address: " + host);
+        _address.sin_addr.s_addr = htonl(hostOrderAddr);
     }
     else
-        _address.sin_addr.s_addr = INADDR_ANY;
+        _address.sin_addr.s_addr = htonl(INADDR_ANY);
 }
 
 SocketServer::~SocketServer() {}

@@ -1,0 +1,3 @@
+This file is read by info.sh with the relative path "data.txt".
+Seeing its content below proves the server chdir()s into the script's
+own directory before execve(), as the subject requires.

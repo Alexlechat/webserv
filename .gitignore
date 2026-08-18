@@ -19,6 +19,11 @@
 !README.md
 !ERRORS.md
 
+# The server opens its log files at startup and refuses to run if the
+# directory is missing, so the (empty) directory must be tracked.
+!logs/
+!logs/.gitkeep
+
 # Exclude generated files
 logs/*.log
 compile_commands.json

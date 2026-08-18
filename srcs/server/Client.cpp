@@ -12,7 +12,8 @@
 
 Client::Client(int fd, const std::vector<ServerConfig>& serverConfigs, const FileLogger& accessLogger)
 	: SocketClient(fd), _status(Http::OK), _accessLogger(accessLogger), _serverConfigs(serverConfigs),
-	  _lastActivity(std::time(NULL)), _awaitingResponse(false), _keepAlive(false), _cgi(NULL)
+	  _lastActivity(std::time(NULL)), _awaitingResponse(false), _keepAlive(false),
+	  _forceClose(false), _cgi(NULL)
 {
 	size_t	coarseCap = 0; // 0 == unlimited
 	for (size_t i = 0; i < _serverConfigs.size(); ++i)
@@ -31,6 +32,7 @@ Client::Client(int fd, const std::vector<ServerConfig>& serverConfigs, const Fil
 Client::~Client(void) { delete _cgi; }
 
 time_t	Client::getLastActivity(void) const { return _lastActivity; }
+void	Client::touch(void) { _lastActivity = std::time(NULL); }
 bool	Client::isAwaitingResponse(void) const { return _awaitingResponse; }
 bool	Client::keepAlive(void) const { return _keepAlive; }
 bool	Client::hasCgi(void) const { return _cgi != NULL; }
@@ -54,6 +56,7 @@ void	Client::resetForNextRequest(void)
 	_send_buf.clear();
 	_awaitingResponse = false;
 	_keepAlive = false;
+	_forceClose = false;
 	_lastActivity = std::time(NULL);
 }
 
@@ -71,6 +74,16 @@ Client::FeedResult	Client::feed(const char *buf, size_t n)
 	if (state == HttpRequest::PARSING_TOO_LARGE)
 	{
 		_onParseError(Http::CONTENT_TOO_LARGE);
+		return FEED_RESPONSE_READY;
+	}
+	if (state == HttpRequest::PARSING_URI_TOO_LONG)
+	{
+		_onParseError(Http::URI_TOO_LONG);
+		return FEED_RESPONSE_READY;
+	}
+	if (state == HttpRequest::PARSING_HEADERS_TOO_LARGE)
+	{
+		_onParseError(Http::HEADERS_TOO_LARGE);
 		return FEED_RESPONSE_READY;
 	}
 	if (state == HttpRequest::PARSING_ERROR)
@@ -136,17 +149,33 @@ Client::FeedResult	Client::_onRequestComplete(void)
 void	Client::_onParseError(Http::StatusCode code)
 {
 	_captureIp();
+	// RFC 7230 6.3.1: once the parser lost track of the message
+	// boundaries, whatever follows on this connection cannot be
+	// trusted to be a new request. Answer, then close.
+	_forceClose = true;
 	_response = HttpResponse(code);
 	HttpResponseBuilder::buildDefaultErrorPageBody(_response, code);
 	_finalizeResponse();
 }
 
-void	Client::finishCgi(void)
+pid_t	Client::finishCgi(void)
 {
 	if (!_cgi)
-		return;
+		return -1;
 
-	_response = _cgi->buildResponse();
+	// RFC 3875: the script answers on stdout. Nothing at all means the
+	// interpreter was missing or the script died before writing a byte;
+	// a non-zero exit means it gave up. Either way this is a gateway
+	// failure, not an empty 200.
+	if (_cgi->failed())
+	{
+		_response = HttpResponse(Http::BAD_GATEWAY);
+		HttpResponseBuilder::buildDefaultErrorPageBody(_response, Http::BAD_GATEWAY);
+	}
+	else
+		_response = _cgi->buildResponse();
+
+	pid_t	pending = _cgi->pendingPid();
 	delete _cgi;
 	_cgi = NULL;
 
@@ -154,6 +183,7 @@ void	Client::finishCgi(void)
 		_response.dropBodyForHead();
 
 	_finalizeResponse();
+	return pending;
 }
 
 void	Client::abortCgi(Http::StatusCode code)
@@ -162,6 +192,7 @@ void	Client::abortCgi(Http::StatusCode code)
 	_cgi = NULL;
 
 	_response = HttpResponse(code);
+	HttpResponseBuilder::buildDefaultErrorPageBody(_response, code);
 	_finalizeResponse();
 }
 
@@ -182,8 +213,18 @@ void	Client::logAccess(void) const
 
 void	Client::_finalizeResponse(void)
 {
-	_keepAlive = _wantsKeepAlive();
+	_keepAlive = !_forceClose && _wantsKeepAlive();
 	_response.setHeader("connection", _keepAlive ? "keep-alive" : "close");
+
+	// RFC 7230 3.3.2: a response that may carry a body must say how
+	// long it is, otherwise the client keeps waiting for bytes that
+	// never come. Responses built without a body (redirects, CGI
+	// failures) would otherwise ship no framing at all.
+	// 1xx/204/304 must not carry the header.
+	int	code = (int)_response.status();
+	if (code >= 200 && code != Http::NO_CONTENT && code != Http::NOT_MODIFIED
+		&& !_response.hasHeader("content-length"))
+		_response.setHeader("content-length", "0");
 
 	// RFC 7231 §7.1.1.2: servers with a clock MUST send a Date header.
 	char		dateBuf[64];

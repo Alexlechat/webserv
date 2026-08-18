@@ -55,6 +55,16 @@ class	Cgi
 
 		void	kill(void); // SIGKILL the child (timeout / early client disconnect)
 
+		// True when the script cannot be considered to have answered:
+		// nothing on stdout at all (missing interpreter, script died
+		// before writing), or a non-zero exit status. The caller turns
+		// this into a 502 instead of shipping an empty 200.
+		bool	failed(void);
+
+		// The child pid still owed a waitpid(), or -1 if failed()
+		// already collected it.
+		pid_t	pendingPid(void) const;
+
 		HttpResponse	buildResponse(void) const;
 
 	private:
@@ -72,7 +82,10 @@ class	Cgi
 		size_t		_written;
 		std::string	_output;
 		time_t		_deadline;
+		bool		_reaped;
+		bool		_exitedOk;
 
+		void						_collectExitStatus(void);
 		std::vector<std::string>	_buildEnv(void) const;
 		HttpResponse				_parseOutput(const std::string& output) const;
 

@@ -287,11 +287,8 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_serveDirectory(const std:
 			result.response = _serveFile(indexPath);
 			return result;
 		}
-		else
-		{
-			result.response = _buildError(Http::NOT_FOUND);
-			return result;
-		}
+		// No index file here: this is not an error yet. Fall through to
+		// autoindex if the location enables it, exactly like nginx.
 	}
 
 	if (_location->autoindex)

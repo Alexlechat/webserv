@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <sstream>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 Cgi::Cgi(const HttpRequest& request,
@@ -17,7 +18,8 @@ Cgi::Cgi(const HttpRequest& request,
 		const std::string& interpreter)
 	: _request(request), _config(config), _location(location),
 	  _scriptPath(scriptPath), _pathInfo(pathInfo), _interpreter(interpreter),
-	  _pid(-1), _inFd(-1), _outFd(-1), _written(0), _deadline(0)
+	  _pid(-1), _inFd(-1), _outFd(-1), _written(0), _deadline(0),
+	  _reaped(false), _exitedOk(true)
 {}
 
 Cgi::~Cgi(void)
@@ -201,6 +203,35 @@ void	Cgi::kill(void)
 	if (_pid > 0)
 		::kill(_pid, SIGKILL);
 }
+
+// Collects the child's exit status if it has already exited. Never
+// blocks: by the time stdout hits EOF the child has normally exited
+// already, and if it hasn't we simply skip the check rather than
+// stall the event loop.
+void	Cgi::_collectExitStatus(void)
+{
+	if (_reaped || _pid <= 0)
+		return;
+
+	int	status = 0;
+	if (waitpid(_pid, &status, WNOHANG) != _pid)
+		return;
+
+	_reaped = true;
+	_exitedOk = WIFEXITED(status) && WEXITSTATUS(status) == 0;
+}
+
+bool	Cgi::failed(void)
+{
+	_collectExitStatus();
+
+	if (_output.empty())
+		return true;
+
+	return _reaped && !_exitedOk;
+}
+
+pid_t	Cgi::pendingPid(void) const { return _reaped ? -1 : _pid; }
 
 HttpResponse	Cgi::buildResponse(void) const
 {

@@ -9,6 +9,7 @@
 
 # include <ctime>
 # include <vector>
+# include <sys/types.h>
 
 class	Cgi;
 
@@ -33,6 +34,9 @@ class	Client : public SocketClient
 		void				logAccess(void) const;
 
 		time_t				getLastActivity(void) const;
+		// Mark progress so a slow but healthy transfer is not mistaken
+		// for an idle connection by the timeout sweep.
+		void				touch(void);
 		bool				isAwaitingResponse(void) const;
 		bool				keepAlive(void) const;
 		void				resetForNextRequest(void);
@@ -42,8 +46,9 @@ class	Client : public SocketClient
 
 		// Called by EventLoop once the owned Cgi has finished normally
 		// (stdout hit EOF): builds the HttpResponse from its output,
-		// deletes it, and fills _send_buf.
-		void				finishCgi(void);
+		// deletes it, and fills _send_buf. Returns the child pid still
+		// waiting to be reaped, or -1 if the Cgi already collected it.
+		pid_t				finishCgi(void);
 		// Called by EventLoop when the owned Cgi has to be aborted
 		// (timeout; already killed by the caller): builds an error
 		// response instead and deletes the Cgi.
@@ -60,6 +65,7 @@ class	Client : public SocketClient
 		time_t						_lastActivity;
 		bool						_awaitingResponse;
 		bool						_keepAlive;
+		bool						_forceClose;
 		Cgi*						_cgi;
 
 		const ServerConfig&	_selectConfig(void) const;

@@ -106,9 +106,15 @@
             <a href="/doesnotexist">Trigger 404 →</a>
         </div>
         <div class="card">
-            <h2>🐍 CGI</h2>
+            <h2>🐍 CGI — Python</h2>
             <p>Scripts in <code>/cgi-bin</code> are executed via fork/execve.</p>
             <a href="/cgi-bin/hello.py">hello.py →</a>
+        </div>
+        <div class="card">
+            <h2>🐚 CGI — Bash</h2>
+            <p>Same route, second interpreter: the <code>.sh</code> extension is
+               mapped to <code>/bin/bash</code>.</p>
+            <a href="/cgi-bin/info.sh?lang=bash">info.sh →</a>
         </div>
     </div>
 
@@ -133,7 +139,7 @@
             <tr>
                 <td class="path">/cgi-bin</td>
                 <td class="method">GET POST</td>
-                <td>CGI scripts (.py .php)</td>
+                <td>CGI scripts (.py → python3, .sh → bash)</td>
             </tr>
             <tr>
                 <td class="path">/old</td>

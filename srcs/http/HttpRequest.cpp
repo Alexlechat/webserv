@@ -14,11 +14,18 @@ HttpRequest::HttpRequest(void)
 
 void	HttpRequest::setMaxBodySize(size_t maxBodySize) { _maxBodySize = maxBodySize; }
 
+bool	HttpRequest::_isTerminal(ParseState state)
+{
+	return state == PARSING_COMPLETE || state == PARSING_ERROR
+		|| state == PARSING_TOO_LARGE || state == PARSING_URI_TOO_LONG
+		|| state == PARSING_HEADERS_TOO_LARGE;
+}
+
 HttpRequest::ParseState	HttpRequest::feed(const std::string& chunk)
 {
 	_buffer += chunk;
 
-	while (_state != PARSING_COMPLETE && _state != PARSING_ERROR && _state != PARSING_TOO_LARGE)
+	while (!_isTerminal(_state))
 	{
 		ParseState	prev = _state;
 
@@ -41,7 +48,14 @@ HttpRequest::ParseState	HttpRequest::_tryParseRequestLine(void)
 {
 	size_t	lineEnd = _buffer.find(Http::CRLF);
 	if (lineEnd == std::string::npos)
+	{
+		// Still no end of line in sight: refuse to keep buffering.
+		if (_buffer.size() > MAX_REQUEST_LINE_SIZE)
+			return PARSING_URI_TOO_LONG;
 		return PARSING_REQUEST_LINE;
+	}
+	if (lineEnd > MAX_REQUEST_LINE_SIZE)
+		return PARSING_URI_TOO_LONG;
 
 	std::istringstream	iss(_buffer.substr(0, lineEnd));
 	iss >> method >> path >> version;
@@ -77,7 +91,15 @@ HttpRequest::ParseState	HttpRequest::_tryParseHeaders(void)
 	else if (_buffer.size() >= 2 && _buffer[0] == '\r' && _buffer[1] == '\n')
 		headersEnd = 0;
 	else
+	{
+		// The head is not terminated yet; same reasoning as above.
+		if (_buffer.size() > MAX_HEADERS_SIZE)
+			return PARSING_HEADERS_TOO_LARGE;
 		return PARSING_HEADERS;
+	}
+
+	if (headersEnd > MAX_HEADERS_SIZE)
+		return PARSING_HEADERS_TOO_LARGE;
 
 	size_t	pos = 0;
 	while (pos < headersEnd)
@@ -167,7 +189,7 @@ HttpRequest::ParseState	HttpRequest::_tryParseChunkedBody(void)
 
 HttpRequest::ParseState	HttpRequest::state(void) const		{ return _state; }
 bool					HttpRequest::isComplete(void) const	{ return _state == PARSING_COMPLETE; }
-bool					HttpRequest::hasError(void) const	{ return _state == PARSING_ERROR || _state == PARSING_TOO_LARGE; }
+bool					HttpRequest::hasError(void) const	{ return _isTerminal(_state) && _state != PARSING_COMPLETE; }
 
 void	HttpRequest::reset(void)
 {

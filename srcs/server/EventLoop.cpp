@@ -64,7 +64,12 @@ EventLoop::EventLoop(const std::string& configPath) : _logger()
 			Server*	newServer = new Server(byPort[portOrder[i]]);
 			_logger.addLogger(newServer->getServerErrorLogger());
 			addServer(newServer);
-			LOG_INFO(ConsoleLogger::instance(), "Server listening on 0.0.0.0:" + Utils::toString(portOrder[i]));
+			// Report the interface we actually bound, not a hardcoded one.
+			const std::vector<ServerConfig>&	group = byPort[portOrder[i]];
+			std::string	boundHost = group[0].host.specified && !group[0].host.value.empty()
+								? group[0].host.value : std::string("0.0.0.0");
+			LOG_INFO(ConsoleLogger::instance(),
+				"Server listening on " + boundHost + ":" + Utils::toString(portOrder[i]));
 		}
 	}
 	catch (const std::exception& e)
@@ -156,6 +161,15 @@ int	EventLoop::run(void)
 
 					if (_fds[i].revents & POLLOUT)
 						_handleWrite(i);
+
+					if (_fds.size() != sizeBefore)
+						break;
+
+					// The peer hung up or the socket broke. poll() reports it
+					// directly, which is how we drop dead connections without
+					// ever inspecting errno after a send()/recv().
+					if (_fds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
+						_removeClient(i);
 					break;
 				}
 
@@ -261,29 +275,28 @@ void	EventLoop::_handleWrite(int i)
 	ssize_t n = send(_fds[i].fd, buf.c_str(), buf.size(), 0);
 
 	if (n > 0)
+	{
 		buf.erase(0, n);
+		client.touch();
+	}
 
-	if (buf.empty())
+	if (!buf.empty())
 	{
-		client.logAccess();
-		if (client.keepAlive())
-		{
-			client.resetForNextRequest();
-			_fds[i].events = POLLIN;
-		}
-		else
-			_removeClient(i);
+		// Short write, or the socket was not writable after all: leave
+		// the rest queued and come back when poll() says so. errno is
+		// never consulted here -- a peer that is really gone shows up as
+		// POLLERR/POLLHUP, and a silent one is caught by the idle sweep.
+		return;
 	}
-	else if (n < 0)
+
+	client.logAccess();
+	if (client.keepAlive())
 	{
-		// EAGAIN/EWOULDBLOCK: retry on next poll cycle (do nothing).
-		// Any other error: drop the client.
-		if (errno != EAGAIN && errno != EWOULDBLOCK)
-		{
-			client.logAccess();
-			_removeClient(i);
-		}
+		client.resetForNextRequest();
+		_fds[i].events = POLLIN;
 	}
+	else
+		_removeClient(i);
 }
 
 void	EventLoop::_removeClient(int i)
@@ -350,11 +363,12 @@ void	EventLoop::_completeCgi(Client* client)
 	if (!cgi)
 		return; // stdin+stdout both fired this tick; already handled
 
-	pid_t	pid = cgi->getPid();
+	// finishCgi() may reap the child itself while deciding whether the
+	// script failed; it hands back only what is still owed a waitpid().
+	pid_t	pending = client->finishCgi(); // builds the HttpResponse, deletes the Cgi
 
-	client->finishCgi(); // builds the HttpResponse, deletes the Cgi
-
-	_zombiePids.push_back(pid);
+	if (pending > 0)
+		_zombiePids.push_back(pending);
 	_retireCgiFds(client);
 	_activateClientWrite(client);
 	_untrackCgiClient(client);

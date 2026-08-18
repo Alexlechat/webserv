@@ -19,6 +19,8 @@ Core features:
 - File uploads, including real `multipart/form-data` parsing (as sent by an HTML `<form>`).
 - CGI execution (`fork`/`pipe`/`execve`) with the standard CGI environment variables, de-chunked
   request bodies on stdin, and a bounded timeout so a broken script can never hang the server.
+  Several interpreters can be mapped on one route (`.py` and `.sh` in the sample config); a
+  script that produces no output or exits non-zero is reported as `502 Bad Gateway`.
 - HTTP redirections, per-location allowed methods, and `client_max_body_size` enforcement.
 - Virtual hosting: several `server {}` blocks can share one `listen` port and are
   disambiguated by the `Host` header, the same way nginx does.
@@ -44,31 +46,37 @@ Compiled with `c++`, flags `-Wall -Wextra -Werror -std=c++98`.
 ./webserv [configuration file]
 ```
 
-If no configuration file is given, `./www/config` is used by default. A ready-to-use example
-configuration and a matching `www/` document root (static pages, a Python CGI script, an
-upload directory, error pages, a second virtual host) are provided so every feature can be
-exercised immediately:
+If no configuration file is given, `./www/config.cfg` is used by default. A ready-to-use
+example configuration and a matching `www/` document root (static pages, two CGI scripts in
+two different languages, an upload directory, error pages, a second virtual host) are
+provided so every feature can be exercised immediately:
 
 ```sh
-./webserv ./www/config
+./webserv ./www/config.cfg
 ```
 
 Then, for example:
 
 ```sh
-curl http://localhost:8080/                 # static site
-curl http://localhost:8080/cgi-bin/hello.py  # CGI
+curl http://localhost:8080/                    # static site
+curl http://localhost:8080/errors/             # directory listing (autoindex)
+curl http://localhost:8080/old                 # 301 redirect
+curl http://localhost:8080/cgi-bin/hello.py    # CGI, run through python3
+curl http://localhost:8080/cgi-bin/info.sh     # CGI, same route, run through bash
 curl -F "file=@somefile.txt" http://localhost:8080/upload
-curl -H "Host: other" http://localhost:9090/ # second virtual host
+curl -X DELETE http://localhost:8080/upload/somefile.txt
+curl -H "Host: other" http://localhost:9090/   # second virtual host
 ```
 
 ### Configuration file
 
 The syntax takes inspiration from nginx's `server {}` blocks. Inside a `server` block you can
-set: `listen`, `server_name`, `client_max_body_size`, `error_page`, `error_log` / `access_log`,
-and any number of `location {}` blocks. Inside a `location` block: `root`, `index`, `methods`,
-`autoindex`, `upload_store`, `redirect`, and `cgi_extension`. See `www/config` for a complete,
-commented-in-practice example.
+set: `listen` (either `listen 8080;` or `listen 127.0.0.1:8080;`), `server_name`,
+`client_max_body_size`, `error_page`, `error_log` / `access_log`, and any number of
+`location {}` blocks. Inside a `location` block: `root`, `index`, `methods`, `autoindex`,
+`upload_store`, `upload_return`, `redirect`, and `cgi_extension`. `cgi_extension` may be
+repeated to map several extensions to several interpreters on the same route. See
+`www/config.cfg` for a complete, commented-in-practice example.
 
 ## Resources
 

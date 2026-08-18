@@ -49,8 +49,10 @@ namespace	Http
         REQUEST_TIMEOUT     	= 408,
         CONTENT_TOO_LARGE   	= 413,
         URI_TOO_LONG        	= 414,
+        HEADERS_TOO_LARGE   	= 431,
         INTERNAL_SERVER_ERROR	= 500,
         NOT_IMPLEMENTED			= 501,
+        BAD_GATEWAY         	= 502,
         SERVICE_UNAVAILABLE 	= 503
     };
 
@@ -73,8 +75,10 @@ namespace	Http
             case REQUEST_TIMEOUT:       return "Request Timeout";
             case CONTENT_TOO_LARGE:     return "Content Too Large";
             case URI_TOO_LONG:          return "URI Too Long";
+            case HEADERS_TOO_LARGE:     return "Request Header Fields Too Large";
             case INTERNAL_SERVER_ERROR: return "Internal Server Error";
             case NOT_IMPLEMENTED:       return "Not Implemented";
+            case BAD_GATEWAY:           return "Bad Gateway";
             case SERVICE_UNAVAILABLE:   return "Service Unavailable";
             default:                    return "Unknown";
         }

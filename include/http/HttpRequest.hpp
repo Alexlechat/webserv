@@ -5,6 +5,13 @@
 # include <string>
 # include <map>
 
+// Upper bounds on the part of a request that has to be buffered before
+// it can be understood. Without them a single client can make the
+// server allocate without limit just by never sending the blank line
+// that ends the head. nginx uses the same order of magnitude.
+# define MAX_REQUEST_LINE_SIZE	8192
+# define MAX_HEADERS_SIZE		8192
+
 class	HttpRequest
 {
 	public:
@@ -15,7 +22,9 @@ class	HttpRequest
 			PARSING_BODY,
 			PARSING_COMPLETE,
 			PARSING_ERROR,
-			PARSING_TOO_LARGE
+			PARSING_TOO_LARGE,		// body over client_max_body_size -> 413
+			PARSING_URI_TOO_LONG,	// request line over the cap  -> 414
+			PARSING_HEADERS_TOO_LARGE	// head over the cap     -> 431
 		};
 
 		std::string							method;
@@ -44,6 +53,8 @@ class	HttpRequest
 		size_t		_contentLenght;
 		bool		_chunked;
 		size_t		_maxBodySize;
+
+		static bool	_isTerminal(ParseState state);
 
 		ParseState	_tryParseRequestLine(void);
 		ParseState	_tryParseHeaders(void);

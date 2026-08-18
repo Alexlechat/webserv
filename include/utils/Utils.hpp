@@ -43,6 +43,12 @@ namespace Utils
 	// external-function list.
 	std::string	ipv4ToString(unsigned int hostOrderAddr);
 
+	// Exact inverse of ipv4ToString(): parses a strict dotted-quad
+	// ("127.0.0.1") into a host-order address. Returns false on any
+	// malformed input. Hand rolled for the same reason as above:
+	// inet_pton()/inet_addr() are not on the allowed list either.
+	bool		ipv4FromString(const std::string& dotted, unsigned int& hostOrderAddr);
+
 	std::string	urlDecode(const std::string& s);
 	std::string	htmlEscape(const std::string& s);
 

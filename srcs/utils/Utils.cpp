@@ -166,6 +166,45 @@ std::string	Utils::ipv4ToString(unsigned int hostOrderAddr)
 	return oss.str();
 }
 
+bool		Utils::ipv4FromString(const std::string& dotted, unsigned int& hostOrderAddr)
+{
+	unsigned int	addr = 0;
+	size_t			pos = 0;
+
+	for (int byte = 0; byte < 4; ++byte)
+	{
+		if (byte > 0)
+		{
+			if (pos >= dotted.size() || dotted[pos] != '.')
+				return false;
+			++pos;
+		}
+
+		size_t	start = pos;
+		unsigned int	value = 0;
+
+		while (pos < dotted.size() && dotted[pos] >= '0' && dotted[pos] <= '9')
+		{
+			value = value * 10 + (unsigned int)(dotted[pos] - '0');
+			if (value > 255)
+				return false;
+			++pos;
+		}
+
+		// Each part must hold between one and three digits.
+		if (pos == start || pos - start > 3)
+			return false;
+
+		addr = (addr << 8) | value;
+	}
+
+	if (pos != dotted.size()) // trailing garbage
+		return false;
+
+	hostOrderAddr = addr;
+	return true;
+}
+
 bool		Utils::dir_exists(const std::string& path)
 {
 	struct stat	info;
