@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Page — Webserv</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background:#0f1117; color:#e2e8f0; padding:40px 20px; }
+        .container { max-width: 640px; margin: 0 auto; }
+        h1 { color: #68d391; }
+        p  { color: #a0aec0; line-height: 1.8; margin-bottom: 16px; }
+        code { background:#1a202c; padding: 2px 6px; border-radius:4px; color:#fbb6ce; }
+        .badge { display:inline-block; background:#1a202c; border:1px solid #276749;
+                border-radius:6px; padding:4px 12px; font-size:0.8rem; color:#68d391; margin-bottom:16px; }
+        a { display:inline-block; margin-top:16px; color:#63b3ed; text-decoration:none;
+            border:1px solid #2b4c7e; padding:6px 16px; border-radius:6px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="badge">301 Redirect worked ✓</div>
+    <h1>You've been redirected!</h1>
+    <p>You were sent here from <code>/old</code> via a <code>301 Moved Permanently</code> response.</p>
+    <p>Your server correctly set the <code>Location: /new</code> header and the browser followed it.</p>
+    <a href="/">← Back to home</a>
+</div>
+</body>
+</html>

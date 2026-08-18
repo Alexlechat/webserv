@@ -27,15 +27,52 @@ DIR_DEPS				:=				.deps
 
 
 #	FLAGS
-FLAGS					:=				-Wall -Wextra -Werror -I$(DIR_INCS) -g3
+FLAGS					:=				-Wall -Wextra -Werror -I$(DIR_INCS)
 DEPFLAGS				:=				-MMD -MP
 CXXFLAGS				:=				$(FLAGS) $(DEPFLAGS) -std=c++98
 
 
 #	SOURCES AND HEADERS
 SRCS					:=				$(DIR_SRCS)/main.cpp \
-										$(DIR_SRCS)/server/Server.cpp
-INCS					:=				$(DIR_INCS)/Server.hpp
+										$(DIR_SRCS)/config/ConfigParser.cpp \
+										$(DIR_SRCS)/server/Client.cpp \
+										$(DIR_SRCS)/server/EventLoop.cpp \
+										$(DIR_SRCS)/server/Server.cpp \
+										$(DIR_SRCS)/socket/Socket.cpp \
+										$(DIR_SRCS)/socket/SocketClient.cpp \
+										$(DIR_SRCS)/socket/SocketServer.cpp \
+										$(DIR_SRCS)/http/HttpRequest.cpp \
+										$(DIR_SRCS)/http/HttpResponse.cpp \
+										$(DIR_SRCS)/http/HttpResponseBuilder.cpp \
+										$(DIR_SRCS)/http/Cgi.cpp \
+										$(DIR_SRCS)/logger/Logger.cpp \
+										$(DIR_SRCS)/logger/ConsoleLogger.cpp \
+										$(DIR_SRCS)/logger/FileLogger.cpp \
+										$(DIR_SRCS)/logger/MultiLogger.cpp \
+										$(DIR_SRCS)/utils/Utils.cpp
+
+
+INCS					:=				$(DIR_INCS)/config/ConfigParser.hpp \
+										$(DIR_INCS)/config/Config.hpp \
+										$(DIR_INCS)/config/HttpConfig.hpp \
+										$(DIR_INCS)/config/LocationConfig.hpp \
+										$(DIR_INCS)/config/ServerConfig.hpp \
+										$(DIR_INCS)/config/FileLoggerConfig.hpp \
+										$(DIR_INCS)/server/Client.hpp \
+										$(DIR_INCS)/server/EventLoop.hpp \
+										$(DIR_INCS)/server/Server.hpp \
+										$(DIR_INCS)/socket/Socket.hpp \
+										$(DIR_INCS)/socket/SocketClient.hpp \
+										$(DIR_INCS)/socket/SocketServer.hpp \
+										$(DIR_INCS)/http/HttpRequest.hpp \
+										$(DIR_INCS)/http/HttpResponse.hpp \
+										$(DIR_INCS)/http/HttpResponseBuilder.hpp \
+										$(DIR_INCS)/http/Cgi.hpp \
+										$(DIR_INCS)/logger/Logger.hpp \
+										$(DIR_INCS)/logger/ConsoleLogger.hpp \
+										$(DIR_INCS)/logger/FileLogger.hpp \
+										$(DIR_INCS)/logger/MultiLogger.hpp \
+										$(DIR_INCS)/utils/Utils.hpp
 
 
 
@@ -44,7 +81,8 @@ OBJS					:=				$(addprefix $(DIR_OBJS)/, $(notdir $(SRCS:.cpp=.o)))
 DEPS					:=				$(addprefix $(DIR_DEPS)/, $(notdir $(SRCS:.cpp=.d)))
 
 
-vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server
+vpath	%.cpp $(DIR_SRCS) $(DIR_SRCS)/server $(DIR_SRCS)/config $(DIR_SRCS)/socket $(DIR_SRCS)/http $(DIR_SRCS)/logger $(DIR_SRCS)/utils
+
 
 #	ALL RULE
 .PHONY:			all
@@ -100,4 +138,15 @@ fclean:			clean
 #	REBUILD RULE
 .PHONY:			re
 re:				fclean	all
+				
 
+#	DEBUG RULE
+.PHONY:			debug
+debug:
+										$(MAKE) re FLAGS="$(FLAGS) -g3"
+
+
+#	RUN RULE
+.PHONY:			run
+run:									$(MAKE) all FLAGS="$(FLAGS) -O3"
+										./$(NAME)

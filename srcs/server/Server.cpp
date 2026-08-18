@@ -1,65 +1,31 @@
-#include "Server.hpp"
+#include "server/Server.hpp"
+#include "logger/FileLogger.hpp"
+#include <stdexcept>
 
-#include <cstdlib>
-#include <iostream>
-#include <unistd.h>
-#include <sys/socket.h>
-
-Server::Server(void)
+Server::Server(const std::vector<ServerConfig>& serverConfigs)
+	: SocketServer(serverConfigs.empty() ? 0 : serverConfigs[0].port),
+	  _serverConfigs(serverConfigs)
 {
-	try
-	{
-		initSocket(DEFAULT_PORT);
-		bindSocket();
-		listenSocket(LISTEN_MAX);
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << "SERVER EXCEPTION: " << e.what() << std::endl;
-	}
+	if (_serverConfigs.empty())
+		throw std::runtime_error("Server: no ServerConfig provided");
+
+	// The first server{} block declared for a given port acts as the
+	// default (used for logging and for requests whose Host header
+	// doesn't match any server_name in the group), matching nginx's
+	// convention.
+	_fileErrorLogger = new FileLogger(_serverConfigs[0].error_log_config);
+	_fileAccessLogger = new FileLogger(_serverConfigs[0].access_log_config);
+
+	bindSocket();
+	listenSocket(LISTEN_MAX);
 }
 
 Server::~Server(void)
 {
-	close(_fd);
+	delete _fileErrorLogger;
+	delete _fileAccessLogger;
 }
 
-Server::Server(const Server& src) { *this = src; }
-Server&	Server::operator=(const Server& rhs)
-{
-	if (this != &rhs)
-	{
-		_fd = rhs._fd;
-		_addr = rhs._addr;
-	}
-
-	return *this;
-}
-
-int	Server::getServerFd(void) const
-{
-	return _fd;
-}
-
-void Server::initSocket(int port)
-{
-	_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_fd == -1)
-		throw ServerException("Socket creation failure");
-
-	_addr.sin_family = AF_INET;
-	_addr.sin_addr.s_addr = INADDR_ANY;
-	_addr.sin_port = htons(port);
-}
-
-void	Server::bindSocket(void) const
-{
-	if (bind(_fd, (struct sockaddr *)&_addr, sizeof(_addr)) < 0)
-		throw ServerException("Socket bind failure");
-}
-
-void	Server::listenSocket(int maxConnections) const
-{
-	if (listen(_fd, maxConnections) < 0)
-		throw ServerException("Socket listen failure");
-}
+const FileLogger&					Server::getServerErrorLogger(void) const { return *_fileErrorLogger; }
+const FileLogger&					Server::getServerAccessLogger(void) const { return *_fileAccessLogger; }
+const std::vector<ServerConfig>&	Server::getServerConfigs(void) const { return _serverConfigs; }
