@@ -25,7 +25,7 @@ struct FileLoggerConfig
 	FileLoggerConfig(void) : log_min_lvl(Logger::DEBUG) {}
 	FileLoggerConfig(DefaultFileConfig def)
 	{
-		switch (def) 
+		switch (def)
 		{
 			case DEFAULT_ERROR:
 				log_filepath = DEFAULT_ERROR_LOG_FILEPATH;
@@ -55,7 +55,7 @@ struct FileLoggerConfig
 	{}
 
 	void	setErrorFileLogger(std::string filepath, std::string min_lvl)
-	{ 
+	{
 		log_filepath = filepath;
 		log_min_lvl = Logger::stringToLevel(min_lvl);
 
@@ -69,4 +69,4 @@ struct FileLoggerConfig
 	void	setAccessFileLogger(std::string filepath) { log_filepath = filepath; }
 };
 
-#endif  // FileLoggerConfig_HPP
+#endif

@@ -59,7 +59,6 @@ std::string	Utils::normalizePath(const std::string& path)
 			continue;
 		if (segment == "..")
 		{
-			// Trying to climb above the root: reject entirely.
 			if (stack.empty())
 				return "";
 			stack.pop_back();
@@ -80,8 +79,6 @@ std::string	Utils::normalizePath(const std::string& path)
 
 std::string	Utils::sanitizeFilename(const std::string& filename)
 {
-	// Keep only the final path component (strip any directories),
-	// then reject anything empty or made only of dots.
 	size_t	slash = filename.find_last_of("/\\");
 	std::string	base = (slash == std::string::npos) ? filename : filename.substr(slash + 1);
 
@@ -191,14 +188,13 @@ bool		Utils::ipv4FromString(const std::string& dotted, unsigned int& hostOrderAd
 			++pos;
 		}
 
-		// Each part must hold between one and three digits.
 		if (pos == start || pos - start > 3)
 			return false;
 
 		addr = (addr << 8) | value;
 	}
 
-	if (pos != dotted.size()) // trailing garbage
+	if (pos != dotted.size())
 		return false;
 
 	hostOrderAddr = addr;

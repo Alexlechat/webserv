@@ -28,25 +28,12 @@ namespace Utils
 	std::string	readFile(const std::string& filepath);
 	std::string	trim(const std::string& s, const char* pattern);
 
-	// Collapses "." and ".." segments in a '/'-rooted path so that a
-	// request path can never climb above the location root via "../".
-	// Returns "" if the path tries to escape above the root.
 	std::string	normalizePath(const std::string& path);
 
-	// Strips any directory components and rejects "." / ".." so an
-	// uploaded filename can never be used to write outside upload_store.
 	std::string	sanitizeFilename(const std::string& filename);
 
-	// Formats an IPv4 address (already in host byte order, e.g. the
-	// result of ntohl()) as a dotted-quad string. Deliberately hand
-	// rolled: inet_ntoa()/inet_ntop() are not on the subject's allowed
-	// external-function list.
 	std::string	ipv4ToString(unsigned int hostOrderAddr);
 
-	// Exact inverse of ipv4ToString(): parses a strict dotted-quad
-	// ("127.0.0.1") into a host-order address. Returns false on any
-	// malformed input. Hand rolled for the same reason as above:
-	// inet_pton()/inet_addr() are not on the allowed list either.
 	bool		ipv4FromString(const std::string& dotted, unsigned int& hostOrderAddr);
 
 	std::string	urlDecode(const std::string& s);
@@ -56,4 +43,4 @@ namespace Utils
 	bool		file_exists(const std::string& filepath);
 };
 
-#endif  // Utils_HPP
+#endif

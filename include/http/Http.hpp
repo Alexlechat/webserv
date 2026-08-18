@@ -90,4 +90,4 @@ namespace	Http
     static const char* const	SPACE_CHARS = " \t\r\n";
 }
 
-#endif  // Http_HPP
+#endif

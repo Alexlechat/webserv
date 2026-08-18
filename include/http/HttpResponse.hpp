@@ -14,8 +14,6 @@ class	HttpResponse
 		void	setBody(const std::string& body, const std::string& contentType = "text/html");
 		void	clearBody(void);
 
-		// Used for HEAD responses: strips the body but keeps every header
-		// (including Content-Length) exactly as a GET would have sent it.
 		void	dropBodyForHead(void);
 
 		bool				hasHeader(const std::string& key) const;
@@ -30,4 +28,4 @@ class	HttpResponse
 		bool								_omitBody;
 };
 
-#endif  // HttpResponse_HPP
+#endif

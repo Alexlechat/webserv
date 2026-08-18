@@ -62,9 +62,6 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::build(void)
 		default:			result.response = _buildError(Http::NOT_IMPLEMENTED); break;
 	}
 
-	// A CGI response isn't ready yet (it's still running): the HEAD
-	// body-drop for that case happens once the CGI actually finishes
-	// (see Client::finishCgi).
 	if (!result.isCgi && _request.methodEnum == Http::HEAD)
 		result.response.dropBodyForHead();
 
@@ -86,9 +83,6 @@ const LocationConfig*	HttpResponseBuilder::_matchLocationForPath(const std::stri
 		const std::string&	locPath = _config.locations[i].path;
 		if (path.compare(0, locPath.size(), locPath) != 0)
 			continue;
-		// Ensure the match ends at a path boundary: the location must be
-		// either an exact match, end with '/', or the next char in the
-		// request path must be '/' (or end-of-string).
 		if (locPath.size() < path.size()
 			&& locPath[locPath.size() - 1] != '/'
 			&& path[locPath.size()] != '/')
@@ -105,14 +99,10 @@ const LocationConfig*	HttpResponseBuilder::_matchLocationForPath(const std::stri
 
 std::string	HttpResponseBuilder::_effectiveRoot(void) const
 {
-	// Locations like /upload typically only declare "upload_store", not
-	// "root". Falling back to it here means the same location can
-	// GET/DELETE the files it just accepted via POST.
 	if (!_location->root->empty())
 		return _location->root;
 	if (!_location->upload_store->empty())
 		return _location->upload_store;
-	// Fall back to server-level root if available.
 	if (!_config.root->empty())
 		return _config.root;
 	return "";
@@ -124,7 +114,7 @@ bool	HttpResponseBuilder::_resolvePath(std::string& outPath) const
 
 	std::string	normalized = Utils::normalizePath(rel);
 	if (normalized.empty())
-		return false; // path traversal attempt
+		return false;
 
 	std::string	fsPath = _effectiveRoot();
 	if (fsPath.empty())
@@ -154,7 +144,6 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_handleGet(void)
 	struct stat	st;
 	if (stat(fsPath.c_str(), &st) != 0)
 	{
-		// File not found: try PATH_INFO splitting for CGI
 		if (!_location->cgi_extensions.empty())
 			return _tryCgiWithPathInfo();
 		result.response = _buildError(Http::NOT_FOUND);
@@ -172,8 +161,6 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_handleGet(void)
 	return result;
 }
 
-// When the resolved path doesn't exist on disk, try PATH_INFO splitting:
-// e.g. /cgi-bin/hello.py/extra/path -> script=hello.py, pathInfo=/extra/path
 HttpResponseBuilder::BuildResult	HttpResponseBuilder::_tryCgiWithPathInfo(void)
 {
 	BuildResult		result;
@@ -181,7 +168,6 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_tryCgiWithPathInfo(void)
 	std::string		pathInfo;
 	std::string		interpreter;
 
-	// Try to split the request path into script + path_info
 	std::string		rel = _request.path.substr(_location->path.size());
 	if (!_matchCgiWithPathInfo(rel, scriptRelPath, pathInfo, interpreter))
 	{
@@ -217,7 +203,6 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_handlePost(void)
 	}
 	else if (!_location->cgi_extensions.empty())
 	{
-		// File not found: try PATH_INFO splitting for CGI
 		return _tryCgiWithPathInfo();
 	}
 
@@ -287,8 +272,6 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_serveDirectory(const std:
 			result.response = _serveFile(indexPath);
 			return result;
 		}
-		// No index file here: this is not an error yet. Fall through to
-		// autoindex if the location enables it, exactly like nginx.
 	}
 
 	if (_location->autoindex)
@@ -378,7 +361,7 @@ bool	HttpResponseBuilder::_parseMultipartUpload(std::string& outFilename, std::s
 		start += delim.size();
 
 		if (body.compare(start, 2, "--") == 0)
-			break; // closing boundary
+			break;
 		if (body.compare(start, 2, "\r\n") == 0)
 			start += 2;
 
@@ -459,7 +442,7 @@ HttpResponse	HttpResponseBuilder::_handleUpload(void)
 	std::string	uploadPath = _location->upload_store;
 	if (uploadPath[uploadPath.size() - 1] != '/') uploadPath += '/';
 	uploadPath += filename;
-	
+
 	std::ofstream	file(uploadPath.c_str(), std::ios::binary);
 	if (!file)
 		return _buildError(Http::FORBIDDEN);
@@ -509,28 +492,31 @@ HttpResponse	HttpResponseBuilder::_buildError(Http::StatusCode code) const
 {
 	HttpResponse	resp(code);
 
-	// Look up error_page in the current location first, then fall back
-	// to the server-level error_pages.
+	const std::map<unsigned short, std::string>*			pageMap = NULL;
 	std::map<unsigned short, std::string>::const_iterator	it;
-	if (_location)
-		it = _location->error_pages.find(code);
-	if (!_location || it == _location->error_pages.end())
-		it = _config.error_pages.find(code);
 
-	if ((_location && it != _location->error_pages.end())
-		|| it != _config.error_pages.end())
+	if (_location)
 	{
-		// nginx treats error_page as an internal redirect: the URI is
-		// re-resolved through the *entire* location table again, exactly
-		// as if the client had requested it directly -- NOT resolved
-		// against the root of the location that produced the error.
+		it = _location->error_pages.find(code);
+		if (it != _location->error_pages.end())
+			pageMap = &_location->error_pages;
+	}
+	if (!pageMap)
+	{
+		it = _config.error_pages.find(code);
+		if (it != _config.error_pages.end())
+			pageMap = &_config.error_pages;
+	}
+
+	if (pageMap)
+	{
 		const LocationConfig*	errLoc = _matchLocationForPath(it->second);
 
 		std::string	root;
 		if (errLoc && !errLoc->root->empty())
 			root = errLoc->root;
 		else if (!_config.locations.empty())
-			root = _config.locations[0].root; // best-effort fallback if no location matches
+			root = _config.locations[0].root;
 
 		if (!root.empty() && root[root.size() - 1] != '/')
 			root += '/';
@@ -559,8 +545,6 @@ bool	HttpResponseBuilder::_isMethodAllowed(void) const
 	if (_location->methods.empty()) return true;
 	if (_location->methods.count(_request.method) > 0) return true;
 
-	// HEAD is defined as GET without a body: wherever GET is allowed,
-	// HEAD must be too, even if the config only lists "GET".
 	if (_request.methodEnum == Http::HEAD && _location->methods.count("GET") > 0) return true;
 
 	return false;
@@ -568,7 +552,6 @@ bool	HttpResponseBuilder::_isMethodAllowed(void) const
 
 bool	HttpResponseBuilder::_matchCgi(const std::string& path, std::string& outInterpreter) const
 {
-	// Try the full path extension first (e.g. "/cgi-bin/script.py").
 	size_t	dot = path.rfind('.');
 	if (dot != std::string::npos)
 	{
@@ -586,10 +569,6 @@ bool	HttpResponseBuilder::_matchCgi(const std::string& path, std::string& outInt
 bool	HttpResponseBuilder::_matchCgiWithPathInfo(const std::string& requestPath,
 		std::string& outScriptPath, std::string& outPathInfo, std::string& outInterpreter) const
 {
-	// Walk the request path looking for a CGI extension at each '/'
-	// boundary. E.g. for "/cgi-bin/hello.py/extra/info", we find
-	// ".py" at position 20 and split into script="/cgi-bin/hello.py"
-	// and pathInfo="/extra/info".
 	for (std::map<std::string, std::string>::const_iterator extIt = _location->cgi_extensions.begin();
 		 extIt != _location->cgi_extensions.end(); ++extIt)
 	{
@@ -599,7 +578,6 @@ bool	HttpResponseBuilder::_matchCgiWithPathInfo(const std::string& requestPath,
 		while (pos != std::string::npos)
 		{
 			size_t	afterExt = pos + ext.size();
-			// The extension must be followed by '/' or end-of-string
 			if (afterExt == requestPath.size() || requestPath[afterExt] == '/')
 			{
 				outScriptPath = requestPath.substr(0, afterExt);
@@ -648,7 +626,6 @@ std::string	HttpResponseBuilder::_readFile(const std::string& path, bool& ok) co
 		return "";
 	}
 
-	// Cap at 100 MB to avoid memory exhaustion on huge files.
 	static const off_t	MAX_SERVE_SIZE = 100 * 1024 * 1024;
 	if (fileStat.st_size > MAX_SERVE_SIZE)
 	{

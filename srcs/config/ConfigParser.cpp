@@ -47,12 +47,6 @@ void	ConfigParser::_tokenize(const std::string& fileContent)
 	}
 }
 
-// ---------------------------------------------------------------------
-// Shared (Config-level) directive handlers: identical behaviour whether
-// called while parsing http{}, server{}, or location{} -- they only
-// touch fields declared on the common Config base.
-// ---------------------------------------------------------------------
-
 void	ConfigParser::_handleRoot(ConfigParser& p, Config& cfg)
 {
 	cfg.setRoot(p._consume());
@@ -109,10 +103,6 @@ void	ConfigParser::_handleAccessLog(ConfigParser& p, Config& cfg)
 	p._expect(";");
 }
 
-// ---------------------------------------------------------------------
-// server{}-only directive handlers.
-// ---------------------------------------------------------------------
-
 void	ConfigParser::_handleListen(ConfigParser& p, Config& cfg)
 {
 	static_cast<ServerConfig&>(cfg).setListen(p._consume());
@@ -124,10 +114,6 @@ void	ConfigParser::_handleServerName(ConfigParser& p, Config& cfg)
 	static_cast<ServerConfig&>(cfg).setServerName(p._consume());
 	p._expect(";");
 }
-
-// ---------------------------------------------------------------------
-// location{}-only directive handlers.
-// ---------------------------------------------------------------------
 
 void	ConfigParser::_handlePath(ConfigParser& p, Config& cfg)
 {
@@ -172,14 +158,6 @@ void	ConfigParser::_handleRedirects(ConfigParser& p, Config& cfg)
 	p._expect(";");
 }
 
-// ---------------------------------------------------------------------
-// Nesting handlers: parse the child block fully on its own terms first,
-// THEN pull down whatever shared directives the child never declared
-// itself. Doing it in this order (after, not before, the nested parse)
-// is what makes "child's own directive always wins" fall out for free
-// from inherit()'s `if (!child.specified) ...` check.
-// ---------------------------------------------------------------------
-
 void	ConfigParser::_inheritShared(Config& child, const Config& parent)
 {
 	inherit(child.error_log_config, parent.error_log_config);
@@ -210,10 +188,6 @@ void	ConfigParser::_handleLocation(ConfigParser& p, Config& cfg)
 
 	serverCfg.locations.push_back(locationConfig);
 }
-
-// ---------------------------------------------------------------------
-// Handler map factories.
-// ---------------------------------------------------------------------
 
 std::map<std::string, ConfigParser::HttpHandler>	ConfigParser::_makeHttpHandlers(void)
 {
@@ -270,10 +244,6 @@ std::map<std::string, ConfigParser::LocationHandler>	ConfigParser::_makeLocation
 	return m;
 }
 
-// ---------------------------------------------------------------------
-// Grammar entry points.
-// ---------------------------------------------------------------------
-
 void	ConfigParser::_parse(void)
 {
 	bool	httpSeen = false;
@@ -319,8 +289,6 @@ HttpConfig	ConfigParser::_parseHttp(void)
 
 	HttpConfig	httpConfig;
 
-	// http{} is the root of the inheritance tree: nothing sits above it
-	// to inherit from, so it needs real defaults, not just "unspecified".
 	httpConfig.error_log_config.set(FileLoggerConfig(FileLoggerConfig::DEFAULT_ERROR));
 	httpConfig.access_log_config.set(FileLoggerConfig(FileLoggerConfig::DEFAULT_ACCESS));
 

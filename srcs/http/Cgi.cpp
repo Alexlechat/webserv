@@ -73,8 +73,8 @@ std::vector<std::string>	Cgi::_buildEnv(void) const
 
 bool	Cgi::start(void)
 {
-	int	inPipe[2];	// parent writes request body -> child stdin
-	int	outPipe[2];	// child stdout -> parent reads CGI output
+	int	inPipe[2];
+	int	outPipe[2];
 
 	if (pipe(inPipe) < 0)
 		return false;
@@ -94,14 +94,11 @@ bool	Cgi::start(void)
 
 	if (pid == 0)
 	{
-		// Child: wire pipes to stdin/stdout and exec the interpreter.
 		dup2(inPipe[0], STDIN_FILENO);
 		dup2(outPipe[1], STDOUT_FILENO);
 		close(inPipe[0]); close(inPipe[1]);
 		close(outPipe[0]); close(outPipe[1]);
 
-		// Close all inherited fds (server sockets, client sockets, other
-		// CGI pipes) so they don't leak into the child process.
 		for (int fd = STDERR_FILENO + 1; fd < 1024; ++fd)
 			close(fd);
 
@@ -128,10 +125,9 @@ bool	Cgi::start(void)
 		argv[2] = NULL;
 
 		execve(_interpreter.c_str(), argv, &envp[0]);
-		_exit(1); // execve failed
+		_exit(1);
 	}
 
-	// Parent
 	_pid = pid;
 	close(inPipe[0]);
 	close(outPipe[1]);
@@ -192,8 +188,6 @@ void	Cgi::handleReadable(void)
 		return;
 	}
 
-	// n == 0 (EOF) or n < 0 (error): the CGI is done producing output
-	// either way.
 	close(_outFd);
 	_outFd = -1;
 }
@@ -204,10 +198,6 @@ void	Cgi::kill(void)
 		::kill(_pid, SIGKILL);
 }
 
-// Collects the child's exit status if it has already exited. Never
-// blocks: by the time stdout hits EOF the child has normally exited
-// already, and if it hasn't we simply skip the check rather than
-// stall the event loop.
 void	Cgi::_collectExitStatus(void)
 {
 	if (_reaped || _pid <= 0)

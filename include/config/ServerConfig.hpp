@@ -44,4 +44,4 @@ struct	ServerConfig : public Config
 	}
 };
 
-#endif  // ServerConfig_HPP
+#endif

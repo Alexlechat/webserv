@@ -12,10 +12,6 @@ class	Cgi;
 class	HttpResponseBuilder
 {
 	public:
-		// Result of build(): either a ready-to-send HttpResponse, or a
-		// CGI that has been start()-ed (fork/pipe already done) and now
-		// needs to be driven to completion by EventLoop's poll() loop.
-		// When isCgi is true, ownership of `cgi` passes to the caller.
 		struct BuildResult
 		{
 			bool			isCgi;
@@ -66,4 +62,4 @@ class	HttpResponseBuilder
 
 HttpResponseBuilder::BuildResult	buildResponse(const HttpRequest& request, const ServerConfig& config);
 
-#endif  // HttpResponseBuilder_HPP
+#endif

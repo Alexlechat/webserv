@@ -55,7 +55,7 @@ std::string	HttpResponse::toString(void) const
 		<< Http::statusToReason(_status) << Http::CRLF;
 
 	for (std::map<std::string, std::string>::const_iterator	it = _headers.begin(); it != _headers.end(); ++it)
-		oss << it->first << ": " << it->second << Http::CRLF; 
+		oss << it->first << ": " << it->second << Http::CRLF;
 
 	oss << Http::CRLF;
 	if (!_omitBody)

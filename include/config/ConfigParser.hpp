@@ -40,7 +40,6 @@ class	ConfigParser
 		typedef void		(*LocationHandler)(ConfigParser&, Config&);
 		static std::map<std::string, LocationHandler>	_makeLocationHandlers(void);
 
-
 		static void			_handleServer(ConfigParser& p, Config& cfg);
 		static void			_handleLocation(ConfigParser& p, Config& cfg);
 
@@ -71,7 +70,6 @@ class	ConfigParser
 		ServerConfig		_parseServer(void);
 		LocationConfig		_parseLocation(const std::string& path);
 
-
 		std::vector<std::string>	_tokens;
 		size_t						_pos;
 
@@ -82,4 +80,4 @@ class	ConfigParser
 		const std::string&	_consume(void);
 };
 
-#endif  // ConfigParser_HPP
+#endif

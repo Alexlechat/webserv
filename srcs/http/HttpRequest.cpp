@@ -49,7 +49,6 @@ HttpRequest::ParseState	HttpRequest::_tryParseRequestLine(void)
 	size_t	lineEnd = _buffer.find(Http::CRLF);
 	if (lineEnd == std::string::npos)
 	{
-		// Still no end of line in sight: refuse to keep buffering.
 		if (_buffer.size() > MAX_REQUEST_LINE_SIZE)
 			return PARSING_URI_TOO_LONG;
 		return PARSING_REQUEST_LINE;
@@ -92,7 +91,6 @@ HttpRequest::ParseState	HttpRequest::_tryParseHeaders(void)
 		headersEnd = 0;
 	else
 	{
-		// The head is not terminated yet; same reasoning as above.
 		if (_buffer.size() > MAX_HEADERS_SIZE)
 			return PARSING_HEADERS_TOO_LARGE;
 		return PARSING_HEADERS;
@@ -106,7 +104,7 @@ HttpRequest::ParseState	HttpRequest::_tryParseHeaders(void)
 	{
 		size_t	lineEnd = _buffer.find(Http::CRLF, pos);
 		if (lineEnd == std::string::npos || lineEnd > headersEnd)
-			lineEnd = headersEnd; 
+			lineEnd = headersEnd;
 
 		size_t	colon = _buffer.find(':', pos);
 		if (colon != std::string::npos && colon < lineEnd)
@@ -116,7 +114,7 @@ HttpRequest::ParseState	HttpRequest::_tryParseHeaders(void)
 			headers[key] = val;
 		}
 		pos = lineEnd + 2;
-	} 
+	}
 
 	_buffer.erase(0, headersEnd == 0 ? 2 : headersEnd + 4);
 

@@ -19,9 +19,9 @@ class	FileLogger : public Logger
 
 	private:
 		mutable std::ofstream	_file;
-		
+
 		FileLogger(const FileLogger&);
 		FileLogger& operator=(const FileLogger&);
 };
 
-#endif  // FileLogger_HPP
+#endif

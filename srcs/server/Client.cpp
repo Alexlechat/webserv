@@ -15,7 +15,7 @@ Client::Client(int fd, const std::vector<ServerConfig>& serverConfigs, const Fil
 	  _lastActivity(std::time(NULL)), _awaitingResponse(false), _keepAlive(false),
 	  _forceClose(false), _cgi(NULL)
 {
-	size_t	coarseCap = 0; // 0 == unlimited
+	size_t	coarseCap = 0;
 	for (size_t i = 0; i < _serverConfigs.size(); ++i)
 	{
 		size_t	limit = _serverConfigs[i].client_max_body_size;
@@ -45,7 +45,6 @@ bool	Client::_wantsKeepAlive(void) const
 	if (it != _request.headers.end())
 		return Utils::strToLower(it->second) != "close";
 
-	// HTTP/1.1 defaults to keep-alive, HTTP/1.0 defaults to close.
 	return _request.version == "HTTP/1.1";
 }
 
@@ -122,7 +121,6 @@ const ServerConfig&	Client::_selectConfig(void) const
 
 Client::FeedResult	Client::_onRequestComplete(void)
 {
-	// HTTP/1.1 requires a Host header (RFC 7230 §5.4).
 	if (_request.version == "HTTP/1.1"
 		&& _request.headers.find("host") == _request.headers.end())
 	{
@@ -149,9 +147,6 @@ Client::FeedResult	Client::_onRequestComplete(void)
 void	Client::_onParseError(Http::StatusCode code)
 {
 	_captureIp();
-	// RFC 7230 6.3.1: once the parser lost track of the message
-	// boundaries, whatever follows on this connection cannot be
-	// trusted to be a new request. Answer, then close.
 	_forceClose = true;
 	_response = HttpResponse(code);
 	HttpResponseBuilder::buildDefaultErrorPageBody(_response, code);
@@ -163,10 +158,6 @@ pid_t	Client::finishCgi(void)
 	if (!_cgi)
 		return -1;
 
-	// RFC 3875: the script answers on stdout. Nothing at all means the
-	// interpreter was missing or the script died before writing a byte;
-	// a non-zero exit means it gave up. Either way this is a gateway
-	// failure, not an empty 200.
 	if (_cgi->failed())
 	{
 		_response = HttpResponse(Http::BAD_GATEWAY);
@@ -216,17 +207,11 @@ void	Client::_finalizeResponse(void)
 	_keepAlive = !_forceClose && _wantsKeepAlive();
 	_response.setHeader("connection", _keepAlive ? "keep-alive" : "close");
 
-	// RFC 7230 3.3.2: a response that may carry a body must say how
-	// long it is, otherwise the client keeps waiting for bytes that
-	// never come. Responses built without a body (redirects, CGI
-	// failures) would otherwise ship no framing at all.
-	// 1xx/204/304 must not carry the header.
 	int	code = (int)_response.status();
 	if (code >= 200 && code != Http::NO_CONTENT && code != Http::NOT_MODIFIED
 		&& !_response.hasHeader("content-length"))
 		_response.setHeader("content-length", "0");
 
-	// RFC 7231 §7.1.1.2: servers with a clock MUST send a Date header.
 	char		dateBuf[64];
 	std::time_t	now = std::time(NULL);
 	struct tm*	gmt = gmtime(&now);

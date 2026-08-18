@@ -23,4 +23,4 @@ class	ConsoleLogger : public Logger
 		bool	_useColor;
 };
 
-#endif  // ConsoleLogger_HPP
+#endif

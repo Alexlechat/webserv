@@ -9,4 +9,4 @@ struct	HttpConfig : public Config
 	std::vector<ServerConfig>				servers;
 };
 
-#endif  // HttpConfig_HPP
+#endif

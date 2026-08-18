@@ -51,7 +51,7 @@ struct	LocationConfig : public Config
 
 	void	setMethods(const std::string& new_method)
 	{
-		
+
 		if (Http::strToMethod(new_method) == Http::UNKNOWN_METHOD)
 			throw std::invalid_argument("Invalid method argument" + new_method);
 
@@ -73,4 +73,4 @@ struct	LocationConfig : public Config
 	}
 };
 
-#endif  // LocationConfig_HPP
+#endif

@@ -19,4 +19,4 @@ class	MultiLogger : public Logger
 		std::vector<const Logger*>	_loggers;
 };
 
-#endif  // MultiLogger_HPP
+#endif

@@ -64,7 +64,6 @@ EventLoop::EventLoop(const std::string& configPath) : _logger()
 			Server*	newServer = new Server(byPort[portOrder[i]]);
 			_logger.addLogger(newServer->getServerErrorLogger());
 			addServer(newServer);
-			// Report the interface we actually bound, not a hardcoded one.
 			const std::vector<ServerConfig>&	group = byPort[portOrder[i]];
 			std::string	boundHost = group[0].host.specified && !group[0].host.value.empty()
 								? group[0].host.value : std::string("0.0.0.0");
@@ -88,9 +87,6 @@ EventLoop::~EventLoop(void)
 {
 	std::vector<Server*>::iterator	serverIt;
 
-	// A Client* can appear at more than one index (main socket + its
-	// CGI pipes), but only the FD_CLIENT slot owns it -- deleting via
-	// any other view would double-free.
 	for (size_t i = 0; i < _fds.size(); ++i)
 		if (_fdTypes[i] == FD_CLIENT)
 			delete _clients[i];
@@ -130,8 +126,6 @@ int	EventLoop::run(void)
 
 		for (int i = (int)_fds.size() - 1; i >= 0; --i)
 		{
-			// A CGI pipe that already closed gets retired in place
-			// (fd = -1); sweep it out now. Safe during a reverse walk.
 			if (_fds[i].fd == -1)
 			{
 				_fds.erase(_fds.begin() + i);
@@ -165,9 +159,6 @@ int	EventLoop::run(void)
 					if (_fds.size() != sizeBefore)
 						break;
 
-					// The peer hung up or the socket broke. poll() reports it
-					// directly, which is how we drop dead connections without
-					// ever inspecting errno after a send()/recv().
 					if (_fds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
 						_removeClient(i);
 					break;
@@ -260,8 +251,6 @@ void	EventLoop::_handleRead(int i)
 	}
 	else if (res == Client::FEED_CGI_STARTED)
 	{
-		// Nothing to read/write on the client socket while the CGI
-		// runs -- the pipe fds are what poll() should watch now.
 		_fds[i].events = 0;
 		_registerCgi(&client);
 	}
@@ -282,10 +271,6 @@ void	EventLoop::_handleWrite(int i)
 
 	if (!buf.empty())
 	{
-		// Short write, or the socket was not writable after all: leave
-		// the rest queued and come back when poll() says so. errno is
-		// never consulted here -- a peer that is really gone shows up as
-		// POLLERR/POLLHUP, and a silent one is caught by the idle sweep.
 		return;
 	}
 
@@ -335,8 +320,6 @@ void	EventLoop::_closeTimedOutClients(void)
 	}
 }
 
-// --- CGI: same poll() array as everything else -----------------------
-
 void	EventLoop::_registerCgi(Client* client)
 {
 	Cgi*	cgi = client->getCgi();
@@ -361,11 +344,9 @@ void	EventLoop::_completeCgi(Client* client)
 {
 	Cgi*	cgi = client->getCgi();
 	if (!cgi)
-		return; // stdin+stdout both fired this tick; already handled
+		return;
 
-	// finishCgi() may reap the child itself while deciding whether the
-	// script failed; it hands back only what is still owed a waitpid().
-	pid_t	pending = client->finishCgi(); // builds the HttpResponse, deletes the Cgi
+	pid_t	pending = client->finishCgi();
 
 	if (pending > 0)
 		_zombiePids.push_back(pending);
@@ -402,7 +383,7 @@ void	EventLoop::_reapZombies(void)
 	for (int i = (int)_zombiePids.size() - 1; i >= 0; --i)
 	{
 		int	status = 0;
-		if (waitpid(_zombiePids[i], &status, WNOHANG) != 0) // never blocks
+		if (waitpid(_zombiePids[i], &status, WNOHANG) != 0)
 			_zombiePids.erase(_zombiePids.begin() + i);
 	}
 }

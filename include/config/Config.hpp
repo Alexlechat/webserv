@@ -28,7 +28,7 @@ struct	Directive
 
 	operator	const T&(void) const { return value; }
 	operator	T&(void) { return value; }
- 
+
 	T*			operator->(void) { return &value; }
 	const T*	operator->(void) const { return &value; }
 };
@@ -38,7 +38,6 @@ inline std::ostream&	operator<<(std::ostream& os, const Directive<T>& d)
 {
 	return os << d.value;
 }
-
 
 template <typename T>
 inline void	inherit(Directive<T>& child, const Directive<T>& parent)
@@ -67,7 +66,7 @@ struct	Config
 	Directive<std::string>					root;
 	Directive<std::string>					index;
 	Directive<size_t>						client_max_body_size;
-	
+
 	std::map<unsigned short, std::string>	error_pages;
 	std::map<std::string, std::string>		cgi_extensions;
 
@@ -118,4 +117,4 @@ struct	Config
 	}
 };
 
-#endif  // Config_HPP
+#endif

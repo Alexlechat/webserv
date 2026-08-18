@@ -57,7 +57,7 @@ std::string		Logger::_formatLevelMessage(const std::string& msg, LogLevel level)
 	oss << "[" << _levelToString(level) << "] "
 		<< _formatTime()
 		<< msg;
- 
+
 	return oss.str();
 }
 
@@ -65,7 +65,7 @@ std::string	Logger::_formatTime(void) const
 {
 	std::time_t	t = std::time(NULL);
 	std::tm*	tm = std::localtime(&t);
- 
+
 	std::ostringstream oss;
 
 	oss << "["

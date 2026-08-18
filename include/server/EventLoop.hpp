@@ -23,22 +23,17 @@ class	EventLoop
 		void	addServer(Server* server);
 
 	private:
-		// Every entry in _fds has a matching entry (same index) in
-		// _fdTypes and _clients: this is what lets a single poll()
-		// call multiplex listening sockets, client sockets, AND CGI
-		// pipes together, instead of CGI running its own private
-		// blocking poll() loop.
 		enum FdType { FD_SERVER, FD_CLIENT, FD_CGI_STDIN, FD_CGI_STDOUT };
 
 		MultiLogger					_logger;
 
 		std::vector<struct pollfd>	_fds;
 		std::vector<FdType>			_fdTypes;
-		std::vector<Client*>		_clients;   // owning Client* per slot; NULL for FD_SERVER
+		std::vector<Client*>		_clients;
 		std::vector<Server*>		_servers;
 
-		std::vector<Client*>		_cgiClients; // clients with a running CGI (timeout scan)
-		std::vector<pid_t>			_zombiePids; // pids awaiting a non-blocking reap
+		std::vector<Client*>		_cgiClients;
+		std::vector<pid_t>			_zombiePids;
 
 		bool	_isServerFd(int fd) const;
 		Server*	_getServerByFd(int fd) const;

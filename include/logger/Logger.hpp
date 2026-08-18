@@ -50,4 +50,4 @@ class	Logger
 # define LOG_ERROR(logger, message)		LOG_LVL(logger, Logger::ERR,    message)
 # define LOG_CRITICAL(logger, message)	LOG_LVL(logger, Logger::CRIT, message)
 
-#endif  // Logger_HPP
+#endif
