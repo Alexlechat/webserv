@@ -10,11 +10,22 @@ Server::Server(const std::vector<ServerConfig>& serverConfigs)
 	if (_serverConfigs.empty())
 		throw std::runtime_error("Server: no ServerConfig provided");
 
-	_fileErrorLogger = new FileLogger(_serverConfigs[0].error_log_config);
-	_fileAccessLogger = new FileLogger(_serverConfigs[0].access_log_config);
+	_fileErrorLogger = NULL;
+	_fileAccessLogger = NULL;
 
-	bindSocket();
-	listenSocket(LISTEN_MAX);
+	try
+	{
+		_fileErrorLogger = new FileLogger(_serverConfigs[0].error_log_config);
+		_fileAccessLogger = new FileLogger(_serverConfigs[0].access_log_config);
+		bindSocket();
+		listenSocket(LISTEN_MAX);
+	}
+	catch (...)
+	{
+		delete _fileAccessLogger;
+		delete _fileErrorLogger;
+		throw;
+	}
 }
 
 Server::~Server(void)

@@ -8,7 +8,7 @@ class	Socket
 
     public:
         Socket(void);
-        ~Socket(void);
+        virtual ~Socket(void);
 
 		Socket(int fd) : _fd(fd) {}
 
