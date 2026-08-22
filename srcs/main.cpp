@@ -1,5 +1,7 @@
 #include <iostream>
 #include <exception>
+#include "logger/ConsoleLogger.hpp"
+#include "logger/Logger.hpp"
 #include "server/EventLoop.hpp"
 
 # define DEFAULT_CONFIG_PATH "./www/config.cfg"
@@ -21,7 +23,7 @@ int	main(int argc, char** argv)
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "Fatal: " << e.what() << std::endl;
+		LOG_CRITICAL(ConsoleLogger::instance(), e.what());
 		return 1;
 	}
 }

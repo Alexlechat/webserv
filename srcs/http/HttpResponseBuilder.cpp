@@ -1,7 +1,11 @@
+#include "config/Config.hpp"
+#include "config/LocationConfig.hpp"
 #include "http/Http.hpp"
 #include "http/HttpResponse.hpp"
 #include "http/HttpResponseBuilder.hpp"
 #include "http/Cgi.hpp"
+#include "logger/ConsoleLogger.hpp"
+#include "logger/Logger.hpp"
 #include "utils/Utils.hpp"
 
 #include <vector>
@@ -9,6 +13,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <dirent.h>
 #include <algorithm>
 #include <sys/stat.h>
@@ -33,7 +38,7 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::build(void)
 		return result;
 	}
 
-	if (_config.client_max_body_size > 0 && _request.body.size() > _config.client_max_body_size)
+	if (_isBodySizeTooLarge())
 	{
 		result.response = _buildError(Http::CONTENT_TOO_LARGE);
 		return result;
@@ -66,6 +71,11 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::build(void)
 		result.response.dropBodyForHead();
 
 	return result;
+}
+
+bool			HttpResponseBuilder::_isBodySizeTooLarge(void) const
+{
+	return _location->client_max_body_size > 0 && _request.body.size() > _location->client_max_body_size;
 }
 
 const LocationConfig*	HttpResponseBuilder::_matchLocation(void) const

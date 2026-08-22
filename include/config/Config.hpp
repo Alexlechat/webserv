@@ -9,7 +9,7 @@
 # include <stdexcept>
 
 # include "config/FileLoggerConfig.hpp"
-#include "utils/Utils.hpp"
+# include "utils/Utils.hpp"
 
 template <typename T>
 struct	Directive

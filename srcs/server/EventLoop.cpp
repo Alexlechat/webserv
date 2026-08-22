@@ -34,12 +34,12 @@ void	signal_handler(int sig)
 	if (sig == SIGINT)
 	{
 		g_server_running = 0;
-		write(STDOUT_FILENO, "\n", 1);
+		std::cout << '\n';
 	}
 	return ;
 }
 
-EventLoop::EventLoop(const std::string& configPath) : _logger()
+EventLoop::EventLoop(const std::string& configPath)
 {
 	signal(SIGINT,  signal_handler);
 	signal(SIGPIPE, SIG_IGN);
@@ -62,7 +62,6 @@ EventLoop::EventLoop(const std::string& configPath) : _logger()
 		for (size_t i = 0; i < portOrder.size(); ++i)
 		{
 			Server*	newServer = new Server(byPort[portOrder[i]]);
-			_logger.addLogger(newServer->getServerErrorLogger());
 			addServer(newServer);
 			const std::vector<ServerConfig>&	group = byPort[portOrder[i]];
 			std::string	boundHost = group[0].host.specified && !group[0].host.value.empty()
@@ -76,11 +75,8 @@ EventLoop::EventLoop(const std::string& configPath) : _logger()
 		for (size_t j = 0; j < _servers.size(); ++j)
 			delete _servers[j];
 		_servers.clear();
-		LOG_CRITICAL(ConsoleLogger::instance(), e.what());
 		throw;
 	}
-
-	_logger.addLogger(ConsoleLogger::instance());
 }
 
 EventLoop::~EventLoop(void)

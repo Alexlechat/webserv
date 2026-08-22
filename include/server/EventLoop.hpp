@@ -4,8 +4,6 @@
 # include "server/Server.hpp"
 # include "server/Client.hpp"
 
-# include "logger/MultiLogger.hpp"
-
 # include <vector>
 # include <sys/poll.h>
 # include <sys/types.h>
@@ -24,8 +22,6 @@ class	EventLoop
 
 	private:
 		enum FdType { FD_SERVER, FD_CLIENT, FD_CGI_STDIN, FD_CGI_STDOUT };
-
-		MultiLogger					_logger;
 
 		std::vector<struct pollfd>	_fds;
 		std::vector<FdType>			_fdTypes;
