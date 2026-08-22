@@ -52,12 +52,6 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::build(void)
 		return result;
 	}
 
-	if (!_isMethodAllowed())
-	{
-		result.response = _buildError(Http::METHOD_NOT_ALLOWED);
-		return result;
-	}
-
 	switch (_request.methodEnum)
 	{
 		case Http::GET:
@@ -144,6 +138,12 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_handleGet(void)
 {
 	BuildResult	result;
 
+	if (!_isMethodAllowed())
+	{
+		result.response = _buildError(Http::METHOD_NOT_ALLOWED);
+		return result;
+	}
+
 	std::string	fsPath;
 	if (!_resolvePath(fsPath))
 	{
@@ -197,6 +197,12 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_handlePost(void)
 {
 	BuildResult	result;
 
+	if (!_isMethodAllowed())
+	{
+		result.response = _buildError(Http::METHOD_NOT_ALLOWED);
+		return result;
+	}
+
 	std::string	fsPath;
 	if (!_resolvePath(fsPath))
 	{
@@ -228,6 +234,9 @@ HttpResponseBuilder::BuildResult	HttpResponseBuilder::_handlePost(void)
 
 HttpResponse	HttpResponseBuilder::_handleDelete(void)
 {
+	if (!_isMethodAllowed())
+		return _buildError(Http::METHOD_NOT_ALLOWED);
+
 	std::string	fsPath;
 	if (!_resolvePath(fsPath))
 		return _buildError(Http::FORBIDDEN);
